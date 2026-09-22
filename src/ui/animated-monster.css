@@ -1,0 +1,41 @@
+.monster-motion { display: flex; align-items: center; justify-content: center; flex-shrink: 0; pointer-events: none; }
+.monster-motion__posture { transform: rotate(0deg); }
+.monster-motion[data-mood='ready'] .monster-motion__posture { transform: rotate(-3deg); }
+.monster-motion[data-moving='true'] .monster-motion__posture { transition: transform 240ms ease; }
+.monster-motion[data-moving='true'] .monster-motion__idle { animation: monster-breathe 3s ease-in-out infinite; }
+.monster-motion[data-moving='true'][data-mood='ready'] .monster-motion__idle { animation-name: monster-ready; }
+.monster-motion[data-moving='true'][data-mood='friendly'] .monster-motion__idle { animation: monster-friendly 3.6s ease-in-out infinite; }
+.monster-motion[data-moving='true'] [data-reaction='attack'] { animation: monster-attack 350ms ease-in-out; }
+.monster-motion[data-moving='true'] [data-reaction='recoil'] { animation: monster-recoil 320ms ease-in-out; }
+.monster-motion[data-moving='true'] [data-reaction='celebrate'] { animation: monster-celebrate 480ms ease-in-out; }
+
+@keyframes monster-breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.015); }
+}
+@keyframes monster-ready {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  50% { transform: scale(1.015) rotate(1deg); }
+}
+@keyframes monster-friendly {
+  0%, 100% { transform: scale(1) translateY(0) rotate(0deg); }
+  50% { transform: scale(1.015) translateY(-2px) rotate(1deg); }
+}
+@keyframes monster-attack {
+  0%, 100% { transform: translateX(0) scale(1) rotate(0deg); }
+  34% { transform: translateX(-8px) scale(1.025) rotate(-2deg); }
+}
+@keyframes monster-recoil {
+  0%, 100% { transform: translateX(0) scale(1) rotate(0deg); }
+  31% { transform: translateX(6px) scale(.98) rotate(2deg); }
+}
+@keyframes monster-celebrate {
+  0%, 100% { transform: translateY(0) scale(1); }
+  38% { transform: translateY(-8px) scale(1.025); }
+}
+/* Also applies before hydration or while a preference-change event is pending. */
+@media (prefers-reduced-motion: reduce) {
+  .monster-motion .monster-motion__posture { transition: none !important; }
+  .monster-motion .monster-motion__idle,
+  .monster-motion .monster-motion__reaction { animation: none !important; }
+}

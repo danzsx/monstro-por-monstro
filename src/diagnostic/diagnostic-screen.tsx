@@ -4,13 +4,12 @@ import { Redirect, router } from 'expo-router';
 import { Sparkles } from 'lucide-react-native';
 import { useApp } from '@/data/provider';
 import { useActions } from '@/learning/actions';
-import { topicById } from '@/content/catalog';
 import { nextDiagnosticQuestion } from './engine';
 import { Button, Card, Choice, Eyebrow, Heading, Monster, Page, Pill, Progress, Txt } from '@/ui/primitives';
 import { colors as c } from '@/ui/theme';
 import { useTask } from '@/ui/use-task';
 export default function DiagnosticScreen() {
-  const { state, cloudConfigured } = useApp(); const actions = useActions(); const task = useTask();
+  const { state, cloudConfigured, topicById } = useApp(); const actions = useActions(); const task = useTask();
   const [choice, setChoice] = useState<number | null>(null);
   if (!state.student) return <Redirect href="/onboarding" />;
   const question = nextDiagnosticQuestion(state.diagnosticAttempts);

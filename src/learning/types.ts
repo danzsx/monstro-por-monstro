@@ -1,4 +1,4 @@
-export type TopicId = 'proportions' | 'rule-of-three' | 'cytology' | 'genetics';
+export type TopicId = 'proportions' | 'rule-of-three' | 'cytology' | 'genetics' | (string & {});
 export type Feeling = 'confident' | 'insecure' | 'anxious' | 'avoid';
 export type Barrier = 'difficulty' | 'tired' | 'relevance' | 'history';
 export interface StudentModel {
@@ -17,16 +17,31 @@ export interface TopicMastery {
   reviewLevel: number; deferredAt?: string;
   assessmentEvidence?: AttemptEvent[];
 }
-export type Masteries = Record<TopicId, TopicMastery>;
+export type Masteries = Record<string, TopicMastery>;
 export interface Question {
   id: string; topicId: TopicId; difficulty: 1 | 2 | 3; purpose: 'diagnostic' | 'practice' | 'review';
   prompt: string; options: string[]; answer: number; explanation: string;
 }
-export interface LessonBlock { id: string; kind: 'concept' | 'example' | 'recall'; title: string; text: string; reveal?: string; formula?: string }
+export interface LessonBlock { id: string; kind: 'concept' | 'example' | 'recall' | 'summary' | 'pitfall' | 'tip' | 'review' | (string & {}); title: string; text: string; reveal?: string; formula?: string }
+export interface LearningContext {
+  overview: string;
+  applications: string[];
+  limitations: string;
+}
+export interface EnemGuidance {
+  status: 'pending' | 'reviewed';
+  priorities: string[];
+  commonPatterns: string[];
+  lowerIncidence: string[];
+  examsAnalyzed: string;
+  sources: string[];
+}
 export interface Topic {
-  id: TopicId; name: string; discipline: 'Matemática' | 'Biologia'; subtitle: string;
+  id: TopicId; name: string; discipline: 'Matemática' | 'Biologia' | (string & {}); subtitle: string;
   description: string; relevance: string; prerequisiteIds: TopicId[]; priority: number;
   version: number; lessons: LessonBlock[]; questions: Question[];
+  learningContext?: LearningContext;
+  enemGuidance?: EnemGuidance;
 }
 export interface BattlePlan {
   id: string; topicId: TopicId; mode: 'learn' | 'review' | 'micro'; estimatedMinutes: number;

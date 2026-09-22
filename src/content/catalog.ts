@@ -1,6 +1,8 @@
-import { Topic, TopicId, Question } from '@/learning/types';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import { Topic, TopicId, Question, LessonBlock } from '@/learning/types';
 import { mathQuestions, biologyQuestions } from './questions';
-export const TOPICS: Topic[] = [
+
+export const STATIC_TOPICS: Topic[] = [
   { id: 'proportions', name: 'Razões e proporções', discipline: 'Matemática', subtitle: 'Pequenas relações. Grandes descobertas.', description: 'Encontre o que conecta receitas, mapas e situações do seu dia.', relevance: 'Proporções ajudam a entender escalas, misturas e gráficos. Elas abrem o caminho para regra de três.', prerequisiteIds: [], priority: 1, version: 1,
     lessons: [
       { id: 'p1', kind: 'concept', title: 'Comparar é o primeiro passo', text: 'Uma razão compara duas quantidades por uma divisão. Se uma receita usa 2 copos de suco e 6 de água, suco : água é 2 : 6. A ordem importa: água : suco é 6 : 2.', formula: '2 : 6 = 1 : 3' },
@@ -16,6 +18,16 @@ export const TOPICS: Topic[] = [
       { id: 'r4', kind: 'recall', title: 'Explique antes de calcular', text: 'Com velocidade constante, dobrar o tempo dobra a distância? Para distância fixa, dobrar a velocidade faz o quê com o tempo?', reveal: 'Distância e tempo são diretos com velocidade constante. Para distância fixa, dobrar a velocidade reduz o tempo à metade.' },
     ], questions: mathQuestions('rule-of-three') },
   { id: 'cytology', name: 'Citologia', discipline: 'Biologia', subtitle: 'Grandes estruturas, pequenas descobertas.', description: 'Conheça a menor unidade capaz de realizar as funções da vida.', relevance: 'Entender a célula ajuda a explicar nutrição, doenças e como a informação genética funciona.', prerequisiteIds: [], priority: .9, version: 1,
+    learningContext: {
+      overview: 'Citologia estuda a célula: como sua membrana, seu material genético e suas estruturas trabalham juntas para manter a vida. Mais do que decorar nomes, vale compreender a função de cada estrutura e como a célula responde ao que acontece ao seu redor.',
+      applications: [
+        'Em clínicas de fertilização, profissionais acompanham a fecundação e as primeiras divisões celulares de embriões com microscópios.',
+        'Na biotecnologia, células podem ser cultivadas em laboratório para pesquisar processos biológicos e produzir substâncias de interesse médico.',
+        'Na saúde, exames de células ajudam equipes especializadas a observar alterações em tecidos e orientar investigações clínicas.',
+      ],
+      limitations: 'Conhecer as estruturas celulares ajuda a interpretar esses contextos, mas não substitui técnicas laboratoriais, dados clínicos ou a avaliação de profissionais. Em cada situação, é preciso combinar citologia com outros conhecimentos.',
+    },
+    enemGuidance: { status: 'pending', priorities: [], commonPatterns: [], lowerIncidence: [], examsAnalyzed: '', sources: [] },
     lessons: [
       { id: 'c1', kind: 'concept', title: 'Uma pequena unidade, muitas funções', text: 'Células possuem membrana, citoplasma, material genético e ribossomos. Procariontes, como bactérias, não têm núcleo delimitado. Eucariontes, como animais e plantas, têm núcleo e organelas membranosas.' },
       { id: 'c2', kind: 'example', title: 'Pense em uma fábrica de proteínas', text: 'Ribossomos produzem proteínas. O retículo rugoso participa da produção para exportação. O Golgi modifica e empacota. Mitocôndrias contribuem com energia em ATP. Lisossomos fazem digestão intracelular.', formula: 'Ribossomo → retículo → Golgi → secreção' },
@@ -30,6 +42,184 @@ export const TOPICS: Topic[] = [
       { id: 'g4', kind: 'recall', title: 'Faça o cruzamento de cabeça', text: 'Quais gametas são produzidos por AA? E por aa? O que esperar de AA × aa?', reveal: 'AA produz gametas A; aa produz gametas a. Todos os descendentes esperados são Aa.' },
     ], questions: biologyQuestions('genetics') },
 ];
-export const TOPIC_IDS = TOPICS.map(t => t.id);
-export function topicById(id: TopicId): Topic { return TOPICS.find(t => t.id === id)!; }
-export function questionById(id: string): Question { const found = TOPICS.flatMap(t => t.questions).find(q => q.id === id); if (!found) throw new Error(`Questão desconhecida: ${id}`); return found; }
+
+let currentTopics: Topic[] = [...STATIC_TOPICS];
+const listeners = new Set<() => void>();
+
+export function getCatalog(): Topic[] {
+  return currentTopics;
+}
+
+export function setCatalog(nextTopics: Topic[]) {
+  currentTopics = nextTopics;
+  TOPICS = currentTopics;
+  TOPIC_IDS = currentTopics.map(t => t.id);
+  listeners.forEach(cb => cb());
+}
+
+export function subscribeCatalog(listener: () => void) {
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+  };
+}
+
+export let TOPICS: Topic[] = currentTopics;
+export let TOPIC_IDS: TopicId[] = currentTopics.map(t => t.id);
+
+export function topicById(id: TopicId, topics: Topic[] = currentTopics): Topic {
+  const found = topics.find(t => t.id === id);
+  if (!found) {
+    // Fallback: search in static if not in dynamic
+    const staticFound = STATIC_TOPICS.find(t => t.id === id);
+    if (staticFound) return staticFound;
+    throw new Error(`Monstro desconhecido: ${id}`);
+  }
+  return found;
+}
+
+export function questionById(id: string, topics: Topic[] = currentTopics): Question {
+  const found = topics.flatMap(t => t.questions).find(q => q.id === id);
+  if (!found) {
+    const staticFound = STATIC_TOPICS.flatMap(t => t.questions).find(q => q.id === id);
+    if (staticFound) return staticFound;
+    throw new Error(`Questão desconhecida: ${id}`);
+  }
+  return found;
+}
+
+export function mergeCatalogs(staticCatalog: Topic[], remoteCatalog: Topic[]): Topic[] {
+  const remoteMap = new Map(remoteCatalog.map(t => [t.id, t]));
+  const result: Topic[] = [];
+
+  for (const staticTopic of staticCatalog) {
+    if (remoteMap.has(staticTopic.id)) {
+      const remoteTopic = remoteMap.get(staticTopic.id)!;
+      result.push({
+        ...staticTopic,
+        ...remoteTopic,
+        learningContext: remoteTopic.learningContext ?? staticTopic.learningContext,
+        enemGuidance: remoteTopic.enemGuidance ?? staticTopic.enemGuidance,
+      });
+      remoteMap.delete(staticTopic.id);
+    } else {
+      result.push(staticTopic);
+    }
+  }
+
+  // Append any new topics created in CMS
+  for (const newTopic of remoteMap.values()) {
+    result.push(newTopic);
+  }
+
+  return result;
+}
+
+interface RawTopicRow {
+  id: string;
+  name: string;
+  discipline: string;
+  version: number;
+  content: {
+    subtitle?: string;
+    description?: string;
+    relevance?: string;
+    priority?: number;
+    prerequisiteIds?: string[];
+    lessons?: {
+      id?: string;
+      kind?: string;
+      title: string;
+      text: string;
+      formula?: string;
+      reveal?: string;
+    }[];
+    learningContext?: Topic['learningContext'];
+    enemGuidance?: Topic['enemGuidance'];
+  };
+}
+
+interface RawQuestionRow {
+  id: string;
+  topic_id: string;
+  purpose: 'diagnostic' | 'practice' | 'review';
+  difficulty: 1 | 2 | 3;
+  content: {
+    id: string;
+    topicId: string;
+    prompt: string;
+    options: string[];
+    answer: number;
+    explanation: string;
+    difficulty: 1 | 2 | 3;
+    purpose: 'diagnostic' | 'practice' | 'review';
+  };
+}
+
+export async function fetchPublishedCatalog(supabase: SupabaseClient | null): Promise<Topic[]> {
+  if (!supabase) return STATIC_TOPICS;
+
+  try {
+    const [topicsResponse, questionsResponse] = await Promise.all([
+      supabase.from('topics').select('id, name, discipline, version, content').eq('published', true),
+      supabase.from('questions').select('id, topic_id, purpose, difficulty, content'),
+    ]);
+
+    if (topicsResponse.error || !topicsResponse.data) {
+      return getCatalog();
+    }
+
+    const topicsRows = topicsResponse.data as unknown as RawTopicRow[];
+    const questionsRows = (questionsResponse.data ?? []) as unknown as RawQuestionRow[];
+
+    const remoteTopics: Topic[] = topicsRows.map(row => {
+      const content = row.content || {};
+      const topicQuestions: Question[] = questionsRows
+        .filter(q => q.topic_id === row.id)
+        .map(q => {
+          const qc = q.content || {};
+          return {
+            id: q.id,
+            topicId: row.id,
+            prompt: qc.prompt ?? '',
+            options: qc.options ?? [],
+            answer: qc.answer ?? 0,
+            explanation: qc.explanation ?? '',
+            difficulty: (q.difficulty ?? qc.difficulty ?? 1) as 1 | 2 | 3,
+            purpose: (q.purpose ?? qc.purpose ?? 'practice') as 'diagnostic' | 'practice' | 'review',
+          };
+        });
+
+      const lessons: LessonBlock[] = (content.lessons || []).map((l, index) => ({
+        id: l.id || `${row.id}-block-${index + 1}`,
+        kind: l.kind || 'concept',
+        title: l.title || '',
+        text: l.text || '',
+        formula: l.formula,
+        reveal: l.reveal,
+      }));
+
+      return {
+        id: row.id,
+        name: row.name,
+        discipline: row.discipline as Topic['discipline'],
+        subtitle: content.subtitle || '',
+        description: content.description || '',
+        relevance: content.relevance || '',
+        priority: content.priority ?? 0,
+        version: row.version,
+        prerequisiteIds: (content.prerequisiteIds || []) as TopicId[],
+        lessons,
+        learningContext: content.learningContext,
+        enemGuidance: content.enemGuidance,
+        questions: topicQuestions,
+      };
+    });
+
+    const merged = mergeCatalogs(STATIC_TOPICS, remoteTopics);
+    setCatalog(merged);
+    return merged;
+  } catch {
+    return getCatalog();
+  }
+}

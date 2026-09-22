@@ -1,21 +1,22 @@
 import { useEffect, useState } from 'react';
 import { View, useWindowDimensions } from 'react-native';
-import { router, Link } from 'expo-router';
+import { router, Link, useIsFocused } from 'expo-router';
 import { ArrowRight, Clock3, ChevronDown, Sparkles, ShieldCheck, Footprints, BookOpen, CheckCircle2 } from 'lucide-react-native';
 import { useApp } from '@/data/provider';
-import { topicById } from '@/content/catalog';
-import { Button, Card, Eyebrow, Heading, Monster, Page, Pill, Txt } from '@/ui/primitives';
+import { Button, Card, Eyebrow, Heading, Page, Pill, Txt } from '@/ui/primitives';
 import { colors as c } from '@/ui/theme';
 import { useTask } from '@/ui/use-task';
 import { selectNextMonster, DAY } from './engine';
 import { useActions } from './actions';
+import { AnimatedMonster } from '@/ui/animated-monster';
 export default function HomeScreen() {
-  const { state } = useApp(); const actions = useActions(); const { busy, error, run } = useTask();
+  const focused = useIsFocused();
+  const { state, topicById } = useApp(); const actions = useActions(); const { busy, error, run } = useTask();
   const { width } = useWindowDimensions(); const horizontal = width >= 1200 || (width >= 740 && width < 1000);
   const [why, setWhy] = useState(false); const [notice, setNotice] = useState('');
   const now = new Date().toISOString(); const diagnosticDone = !!state.diagnosticCompletedAt;
   const decision = selectNextMonster(state.masteries, now, state.activeBattle?.plan.topicId, state.lastTopic);
-  const topic = topicById(decision?.topicId ?? 'proportions');
+  const topic = decision?.topicId ? topicById(decision.topicId) : topicById('proportions');
   const encountered = Object.values(state.masteries).filter(m => m.encountered).length;
   const mastered = Object.values(state.masteries).filter(m => m.stage === 'mastered').length;
   useEffect(() => { void actions.recordReturn(); }, [state.firstBattleCompletedAt]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -33,7 +34,7 @@ export default function HomeScreen() {
         <View style={{ flexDirection: 'row', gap: 10, flexWrap: 'wrap' }}><Pill>{diagnosticDone ? topic.discipline.toUpperCase() : 'FEITO PARA VOCÊ'}</Pill><View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}><Clock3 color={c.muted} size={14} /><Txt size={12} color={c.muted}>{diagnosticDone ? `${state.activeBattle?.plan.estimatedMinutes ?? (decision?.review ? 10 : 15)} min · no seu ritmo` : '12–20 questões · sem pressão'}</Txt></View></View>
         {horizontal && <View style={{ alignSelf: 'flex-start', gap: 7 }}><Button title={diagnosticDone ? state.activeBattle ? 'Continuar batalha' : 'Enfrentar meu monstro' : 'Encontrar meu primeiro monstro'} onPress={start} busy={busy} /><Txt size={11} color={c.muted} style={{ textAlign: 'center' }}>{diagnosticDone ? 'Seu progresso é salvo a cada passo.' : 'Comece sem criar uma conta.'}</Txt></View>}
       </View>
-      <View style={{ alignItems: 'center', justifyContent: 'center', flex: horizontal ? 1 : undefined, minHeight: horizontal ? 340 : 235 }}><View style={{ position: 'absolute', width: horizontal ? 300 : 220, height: horizontal ? 300 : 220, backgroundColor: '#E5DAEE', borderRadius: 160, transform: [{ rotate: '-12deg' }] }} /><Monster id={diagnosticDone ? topic.id : 'proportions'} size={horizontal ? 340 : 250} /><View style={{ position: 'absolute', bottom: 8, right: 0, paddingHorizontal: 14, paddingVertical: 9, backgroundColor: '#FFFCF9', borderWidth: 1, borderColor: c.line, borderRadius: 14, flexDirection: 'row', gap: 6 }}><Sparkles size={14} color={c.purple} /><Txt size={11} color={c.purple} weight="medium">{diagnosticDone ? 'Um desafio possível.' : 'Prazer, seu próximo passo.'}</Txt></View></View>
+      <View style={{ alignItems: 'center', justifyContent: 'center', flex: horizontal ? 1 : undefined, minHeight: horizontal ? 340 : 235 }}><View style={{ position: 'absolute', width: horizontal ? 300 : 220, height: horizontal ? 300 : 220, backgroundColor: '#E5DAEE', borderRadius: 160, transform: [{ rotate: '-12deg' }] }} /><AnimatedMonster id={diagnosticDone ? topic.id : 'proportions'} size={horizontal ? 340 : 250} active={focused} /><View style={{ position: 'absolute', bottom: 8, right: 0, paddingHorizontal: 14, paddingVertical: 9, backgroundColor: '#FFFCF9', borderWidth: 1, borderColor: c.line, borderRadius: 14, flexDirection: 'row', gap: 6 }}><Sparkles size={14} color={c.purple} /><Txt size={11} color={c.purple} weight="medium">{diagnosticDone ? 'Um desafio possível.' : 'Prazer, seu próximo passo.'}</Txt></View></View>
       {!horizontal && <View style={{ width: '100%', marginTop: 15, gap: 7 }}><Button title={diagnosticDone ? state.activeBattle ? 'Continuar batalha' : 'Enfrentar meu monstro' : 'Encontrar meu primeiro monstro'} onPress={start} busy={busy} /><Txt size={11} color={c.muted} style={{ textAlign: 'center' }}>{diagnosticDone ? 'Seu progresso é salvo a cada passo.' : 'Comece sem criar uma conta.'}</Txt></View>}
     </View>}
     {error && <Txt color={c.danger}>{error}</Txt>}

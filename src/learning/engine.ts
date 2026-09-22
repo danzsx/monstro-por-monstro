@@ -9,15 +9,19 @@ export function scheduleReview(at: string, level: number, passed = true): string
   return new Date(Date.parse(at) + days * DAY).toISOString();
 }
 export function prerequisitesMet(id: TopicId, masteries: Masteries): boolean {
-  return topicById(id).prerequisiteIds.every(p => masteries[p].evidence >= 3 && masteries[p].score >= .65);
+  return topicById(id).prerequisiteIds.every(p => masteries[p] && masteries[p].evidence >= 3 && masteries[p].score >= .65);
 }
 export function isDue(m: TopicMastery, now: string): boolean { return !!m.nextReviewAt && Date.parse(m.nextReviewAt) <= Date.parse(now); }
 export function selectNextMonster(masteries: Masteries, now: string, active?: TopicId, lastTopic?: TopicId): NextMonsterDecision | null {
-  if (active) return { topicId: active, reasons: ['Vamos continuar exatamente de onde você parou.'], review: isDue(masteries[active], now), score: Infinity };
+  if (active) {
+    const activeMastery = masteries[active] ?? { topicId: active, score: 0, evidence: 0, encountered: false, stage: 'unseen', reviewLevel: 0 };
+    return { topicId: active, reasons: ['Vamos continuar exatamente de onde você parou.'], review: isDue(activeMastery, now), score: Infinity };
+  }
   const candidates = TOPICS.filter(t => prerequisitesMet(t.id, masteries)).filter(t => {
-    const m = masteries[t.id]; return !m.nextReviewAt || isDue(m, now);
+    const m = masteries[t.id] ?? { topicId: t.id, score: 0, evidence: 0, encountered: false, stage: 'unseen', reviewLevel: 0 };
+    return !m.nextReviewAt || isDue(m, now);
   }).map(t => {
-    const m = masteries[t.id];
+    const m = masteries[t.id] ?? { topicId: t.id, score: 0, evidence: 0, encountered: false, stage: 'unseen', reviewLevel: 0 };
     const due = isDue(m, now);
     const recentlyDeferred = !!m.deferredAt && Date.parse(now) - Date.parse(m.deferredAt) < DAY;
     const overdueDays = due ? Math.min(7, (Date.parse(now) - Date.parse(m.nextReviewAt!)) / DAY) : 0;
@@ -39,8 +43,9 @@ export function buildBattlePlan(id: string, decision: NextMonsterDecision, check
   const pool = topic.questions.filter(q => q.purpose === (decision.review ? 'review' : 'practice'));
   const useCount = (qid: string) => attempts.filter(a => a.questionId === qid).length;
   const questions = [...pool].sort((a, b) => useCount(a.id) - useCount(b.id) || a.id.localeCompare(b.id)).slice(0, micro ? 2 : 5);
+  const microBlocks = topic.lessons.length <= 2 ? topic.lessons : [topic.lessons[0], topic.lessons[Math.min(3, topic.lessons.length - 1)]].filter(Boolean);
   return { id, topicId: topic.id, mode, estimatedMinutes: micro ? 5 : decision.review ? 10 : 15,
-    blocks: decision.review ? [] : micro ? [topic.lessons[0], topic.lessons[3]] : topic.lessons,
+    blocks: decision.review ? [] : micro ? microBlocks : topic.lessons,
     questionIds: questions.map(q => q.id), criteria: micro ? 'Dar o primeiro passo e praticar duas questões.' : 'Recuperar o conteúdo e resolver cinco questões sem ajuda.' };
 }
 export function updateMastery(previous: TopicMastery, incoming: AttemptEvent[], now: string): TopicMastery {

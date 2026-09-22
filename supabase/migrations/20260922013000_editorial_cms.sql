@@ -107,6 +107,7 @@ alter table public.editorial_audit_log enable row level security;
 
 revoke all on public.admin_profiles, public.topic_versions, public.lesson_blocks, public.question_versions,
   public.topic_prerequisite_versions, public.media_assets, public.editorial_audit_log from anon, authenticated;
+grant select on public.admin_profiles to authenticated;
 grant select on public.topic_versions, public.lesson_blocks, public.question_versions, public.topic_prerequisite_versions to authenticated;
 grant select, insert, update, delete on public.topic_versions, public.lesson_blocks, public.question_versions,
   public.topic_prerequisite_versions, public.media_assets to authenticated;

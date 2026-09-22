@@ -26,8 +26,9 @@ export function useActions() {
       const event: AnalyticsEvent = { id: randomUUID(), name: 'battle_started', at, topicId: decision.topicId };
       return commit(s => {
         if (s.activeBattle || !s.diagnosticCompletedAt) return s;
+        const currentMastery = s.masteries[decision.topicId] ?? { topicId: decision.topicId, score: 0, evidence: 0, encountered: false, stage: 'unseen', reviewLevel: 0 };
         const battle: BattleState = { decision, plan: buildBattlePlan(id, decision, undefined, micro, s.attempts), phase: 'check-in', blockIndex: 0, questionIndex: 0, revealed: false, attempts: [], startedAt: at };
-        return { ...s, activeBattle: battle, masteries: { ...s.masteries, [decision.topicId]: { ...s.masteries[decision.topicId], encountered: true, stage: s.masteries[decision.topicId].stage === 'unseen' ? 'learning' : s.masteries[decision.topicId].stage } }, analytics: [...s.analytics, event] };
+        return { ...s, activeBattle: battle, masteries: { ...s.masteries, [decision.topicId]: { ...currentMastery, encountered: true, stage: currentMastery.stage === 'unseen' ? 'learning' : currentMastery.stage } }, analytics: [...s.analytics, event] };
       }, [{ id: event.id, kind: 'analytics', at, payload: event }]);
     },
     battleAction: (action: BattleAction) => commit(s => s.activeBattle ? { ...s, activeBattle: battleReducer(s.activeBattle, action) } : s),
@@ -54,8 +55,9 @@ export function useActions() {
         const battle = s.activeBattle;
         if (!battle || battle.phase !== 'complete' || s.completedBattles.includes(battle.plan.id)) return s;
         const topicId = battle.plan.topicId;
+        const currentMastery = s.masteries[topicId] ?? { topicId, score: 0, evidence: 0, encountered: false, stage: 'unseen', reviewLevel: 0 };
         const event: AnalyticsEvent = { id: randomUUID(), name: 'battle_completed', at, topicId };
-        return { ...s, masteries: { ...s.masteries, [topicId]: updateMastery(s.masteries[topicId], battle.attempts, at) }, attempts: [...s.attempts, ...battle.attempts], completedBattles: [...s.completedBattles, battle.plan.id], firstBattleCompletedAt: s.firstBattleCompletedAt ?? at, lastTopic: topicId, activeBattle: null, analytics: [...s.analytics, event] };
+        return { ...s, masteries: { ...s.masteries, [topicId]: updateMastery(currentMastery, battle.attempts, at) }, attempts: [...s.attempts, ...battle.attempts], completedBattles: [...s.completedBattles, battle.plan.id], firstBattleCompletedAt: s.firstBattleCompletedAt ?? at, lastTopic: topicId, activeBattle: null, analytics: [...s.analytics, event] };
       });
     },
     defer: () => {

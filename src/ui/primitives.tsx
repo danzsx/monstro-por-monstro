@@ -16,13 +16,16 @@ export function Button({ title, onPress, variant = 'primary', disabled, busy, ic
 }
 export function Card({ children, style }: PropsWithChildren<{ style?: ViewStyle }>) { return <View style={[{ borderRadius: 22, backgroundColor: c.surface, borderWidth: 1, borderColor: c.line, padding: 24, gap: 14 }, style]}>{children}</View>; }
 export function Pill({ children, green = false }: PropsWithChildren<{ green?: boolean }>) { return <View style={{ alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 6, borderRadius: 30, paddingVertical: 6, paddingHorizontal: 12, backgroundColor: green ? c.softGreen : c.lavender }}><Txt size={11} weight="bold" color={green ? c.greenDark : c.purple}>{children}</Txt></View>; }
-const monsters = {
+const monsters: Record<string, any> = {
   proportions: require('../../assets/monsters/proportions.png'),
   'rule-of-three': require('../../assets/monsters/rule-of-three.png'),
   cytology: require('../../assets/monsters/cytology.png'),
   genetics: require('../../assets/monsters/genetics.png'),
 };
-export function Monster({ id, size = 260, muted = false }: { id: TopicId; size?: number; muted?: boolean }) { return <Image source={monsters[id]} contentFit="contain" accessibilityLabel={`Monstro de ${id === 'proportions' ? 'razões e proporções' : id === 'rule-of-three' ? 'regra de três' : id === 'cytology' ? 'citologia' : 'genética'}`} style={{ width: size, height: size, opacity: muted ? .32 : 1 }} />; }
+export function Monster({ id, size = 260, muted = false }: { id: TopicId; size?: number; muted?: boolean }) {
+  const source = monsters[id] ?? monsters.proportions;
+  return <Image source={source} contentFit="contain" accessibilityLabel={`Monstro ${id}`} style={{ width: size, height: size, opacity: muted ? .32 : 1 }} />;
+}
 export function Page({ children, narrow = false }: PropsWithChildren<{ narrow?: boolean }>) {
   const { width } = useWindowDimensions();
   return <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={{ padding: width < 700 ? 22 : 44, paddingBottom: 36, flexGrow: 1 }} style={{ backgroundColor: c.background }}><View style={{ width: '100%', maxWidth: narrow ? 760 : 1160, alignSelf: 'center', gap: 28 }}>{children}</View></ScrollView>;

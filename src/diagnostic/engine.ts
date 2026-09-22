@@ -14,10 +14,10 @@ export function nextDiagnosticQuestion(attempts: AttemptEvent[]): Question | nul
   const counts = TOPIC_IDS.map(id => state[id].evidence);
   if (attempts.length >= 20 || (attempts.length >= 12 && counts.every(n => n >= 3) && TOPIC_IDS.every(id => state[id].score === 0 || state[id].score === 1 || state[id].evidence >= 5))) return null;
   const order = [...TOPICS].sort((a, b) => {
-    const ac = state[a.id].evidence; const bc = state[b.id].evidence;
+    const ac = state[a.id]?.evidence ?? 0; const bc = state[b.id]?.evidence ?? 0;
     if (ac < 3 || bc < 3) return ac - bc || a.prerequisiteIds.length - b.prerequisiteIds.length;
     const uncertainty = (score: number) => 1 - Math.abs(score - .5) * 2;
-    return uncertainty(state[b.id].score) - uncertainty(state[a.id].score) || ac - bc;
+    return uncertainty(state[b.id]?.score ?? 0) - uncertainty(state[a.id]?.score ?? 0) || ac - bc;
   });
   for (const topic of order) {
     const last = attempts.filter(a => a.topicId === topic.id).at(-1);
