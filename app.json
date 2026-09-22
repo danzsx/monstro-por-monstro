@@ -1,25 +1,32 @@
 {
   "expo": {
-    "name": "app",
-    "slug": "app",
+    "name": "Monstro por Monstro",
+    "slug": "monstro-por-monstro",
+    "scheme": "monstropormonstro",
+    "experiments": { "typedRoutes": true },
     "version": "1.0.0",
-    "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "orientation": "default",
+    "icon": "./assets/monsters/proportions.png",
     "userInterfaceStyle": "light",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.monstropormonstro.app"
     },
     "android": {
-      "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
-      },
+      "package": "com.monstropormonstro.app",
+      "adaptiveIcon": { "backgroundColor": "#F5E1D3", "foregroundImage": "./assets/monsters/proportions.png" },
       "predictiveBackGestureEnabled": false
     },
     "web": {
-      "favicon": "./assets/favicon.png"
-    }
+      "favicon": "./assets/monsters/proportions.png",
+      "bundler": "metro",
+      "output": "static"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-image",
+      "expo-font",
+      "expo-secure-store"
+    ]
   }
 }
