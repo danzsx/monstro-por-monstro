@@ -13,8 +13,9 @@ export function evaluateDiagnostic(attempts: AttemptEvent[]): Masteries {
 }
 export function nextDiagnosticQuestion(attempts: AttemptEvent[]): Question | null {
   const state = evaluateDiagnostic(attempts);
-  const counts = DIAGNOSTIC_GATEWAY_IDS.map(id => state[id]?.evidence ?? 0);
-  if (attempts.length >= 20 || (attempts.length >= 12 && counts.every(n => n >= 3) && DIAGNOSTIC_GATEWAY_IDS.every(id => state[id].score === 0 || state[id].score === 1 || state[id].evidence >= 5))) return null;
+  // A short, low-pressure self-assessment: three gentle prompts for each
+  // gateway topic, never an open-ended test session.
+  if (attempts.length >= 12) return null;
   const gatewayTopics = TOPICS.filter(t => DIAGNOSTIC_GATEWAY_IDS.includes(t.id));
   const order = [...gatewayTopics].sort((a, b) => {
     const ac = state[a.id]?.evidence ?? 0; const bc = state[b.id]?.evidence ?? 0;

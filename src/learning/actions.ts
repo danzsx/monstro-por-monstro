@@ -10,9 +10,12 @@ export function useActions() {
   const { commit } = useApp();
   return {
     saveStudent: (student: StudentModel) => commit(s => ({ ...s, student })),
-    answerDiagnostic: (questionId: string, answer: number) => {
+    answerDiagnostic: (questionId: string, familiarity: number) => {
       const question = questionById(questionId); const at = timestamp();
-      const attempt: AttemptEvent = { id: randomUUID(), topicId: question.topicId, questionId, answer, correct: answer === question.answer, assisted: false, at, source: 'diagnostic' };
+      // The initial conversation records a student's self-reported familiarity,
+      // rather than grading an answer to a content question. Only the first,
+      // most-confident option is used to gently vary the suggested starting point.
+      const attempt: AttemptEvent = { id: randomUUID(), topicId: question.topicId, questionId, answer: familiarity, correct: familiarity === 0, assisted: false, at, source: 'diagnostic' };
       return commit(s => {
         if (s.diagnosticCompletedAt || nextDiagnosticQuestion(s.diagnosticAttempts)?.id !== questionId) return s;
         const diagnosticAttempts = [...s.diagnosticAttempts, attempt];
