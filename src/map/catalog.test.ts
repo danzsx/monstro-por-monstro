@@ -43,20 +43,23 @@ describe('inventário e relações do mapa', () => {
 });
 
 describe('vínculos com monstros e progresso', () => {
-  test('vincula os quinze monstros de Natureza sem fabricar entradas no catálogo', () => {
+  test('vincula os trinta e cinco monstros de Natureza sem fabricar entradas no catálogo', () => {
     const masteries = emptyMasteries();
     const before = JSON.stringify(masteries);
     const resolved = MAP_NODES.map(n => resolveNodeState(n, STATIC_TOPICS, masteries));
-    expect(resolved.filter(n => n.topic).map(n => n.topic!.id).sort()).toEqual(['atomic-models', 'calorimetry', 'cytology', 'ecology', 'ecosystems', 'electricity', 'electrochemistry', 'evolution', 'genetics', 'human-physiology', 'kinematics', 'newton-laws', 'ph-hydrolysis', 'solutions', 'stoichiometry']);
+    expect(resolved.filter(n => n.topic).map(n => n.topic!.id).sort()).toEqual(['atomic-models', 'biomolecules', 'biotechnology', 'calorimetry', 'cancer', 'cell-division', 'cell-metabolism', 'cell-origin', 'comparative-biology', 'cytology', 'dna-proteins', 'ecology', 'ecosystems', 'electricity', 'electrochemistry', 'embryology', 'evolution', 'genetics', 'human-evolution', 'human-physiology', 'immunity', 'kinematics', 'life-cycles', 'living-beings', 'membrane-transport', 'mutations', 'newton-laws', 'photosynthesis', 'ph-hydrolysis', 'population-genetics', 'solutions', 'stoichiometry', 'taxonomy', 'tissues', 'water-minerals']);
     expect(JSON.stringify(masteries)).toBe(before);
-    expect(STATIC_TOPICS).toHaveLength(18);
+    expect(STATIC_TOPICS).toHaveLength(38);
   });
   test('catálogo vazio, remoção e disciplina incompatível nunca produzem um link', () => {
     const node = NODES_BY_ID.genetics;
     expect(resolveNodeState(node, [], {})).toEqual({ label: 'Monstro em preparação' });
     const topic = STATIC_TOPICS.find(t => t.id === 'genetics')!;
     expect(resolveNodeState(node, [{ ...topic, discipline: 'Física' }], {}).topic).toBeUndefined();
-    expect(resolveNodeState(NODES_BY_ID['water-minerals'], STATIC_TOPICS, {}).topic).toBeUndefined();
+    expect(resolveNodeState(NODES_BY_ID['water-minerals'], STATIC_TOPICS, {}).topic?.id).toBe('water-minerals');
+    expect(resolveNodeState(NODES_BY_ID['biomolecules'], STATIC_TOPICS, {}).topic?.id).toBe('biomolecules');
+    expect(resolveNodeState(NODES_BY_ID.immunity, STATIC_TOPICS, {}).topic?.id).toBe('immunity');
+    expect(resolveNodeState(NODES_BY_ID.taxonomy, STATIC_TOPICS, {}).topic?.id).toBe('taxonomy');
   });
   test('reutiliza o progresso e identifica revisão vencida', () => {
     const masteries = emptyMasteries();
