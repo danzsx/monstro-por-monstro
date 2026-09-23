@@ -4,7 +4,7 @@ export const CHEMISTRY_NODES = [
   ...units('chem-matter', [
     ['chemical-changes', 'Transformações químicas', 'Use evidências para identificar reações e explique transformações da matéria por rearranjo de partículas.', [0]],
     ['gases', 'Gases', 'Relacione pressão, volume, temperatura e quantidade de matéria. Explore Avogadro, volume molar, teoria cinética e misturas gasosas.', [1]],
-    ['atomic-models', 'Modelos atômicos', 'Acompanhe os modelos de Dalton, Thomson, Rutherford e Bohr e as evidências associadas à estrutura e à natureza elétrica da matéria.', [2]],
+    ['atomic-models', 'Modelos atômicos', 'Acompanhe os modelos de Dalton, Thomson, Rutherford e Bohr e as evidências associadas à estrutura e à natureza elétrica da matéria.', [2], 'atomic-models'],
     ['periodic-table', 'Átomos e tabela periódica', 'Identifique prótons, nêutrons e elétrons, números atômico e de massa, isótopos e massa atômica e leia a organização dos elementos.', [3]],
   ]),
   ...units('chem-amount', [

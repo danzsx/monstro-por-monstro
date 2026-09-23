@@ -229,7 +229,18 @@ const ecologyEntries: Entry[] = [
 
 export const ecologyQuestions = () => ecologyEntries.map((e, i) => question('ecology', i, e));
 
-const natureExpansionEntries: Record<'human-health' | 'evolution' | 'electricity' | 'acid-base' | 'electrochemistry', Entry[]> = {
+const natureExpansionEntries: Record<'human-health' | 'evolution' | 'electricity' | 'acid-base' | 'electrochemistry' | 'atomic-models', Entry[]> = {
+  'atomic-models': [
+    ['No modelo de Dalton, o átomo era representado como:', ['Uma esfera maciça e indivisível', 'Um núcleo com elétrons em órbitas', 'Uma nuvem eletrônica', 'Uma esfera positiva com elétrons incrustados'], 0, 'Dalton propôs átomos como partículas maciças e indivisíveis, modelo conhecido como bola de bilhar.'],
+    ['Os experimentos com raios catódicos levaram Thomson a propor:', ['A existência do elétron', 'A existência do nêutron', 'A órbita quantizada', 'A radioatividade natural'], 0, 'Os raios catódicos eram feixes de partículas negativas: os elétrons.'],
+    ['O experimento da lâmina de ouro de Rutherford indicou que o átomo:', ['Tem um núcleo pequeno e positivo e é majoritariamente vazio', 'É uma esfera maciça sem espaços vazios', 'Não possui partículas negativas', 'Tem carga positiva distribuída em toda a massa'], 0, 'O desvio de poucas partículas alfa indicou um núcleo pequeno, denso e positivo; a maioria atravessou a lâmina.'],
+    ['No modelo de Bohr para o hidrogênio, os elétrons:', ['Ocupam níveis de energia definidos', 'Podem ter qualquer energia sem restrição', 'Ficam presos no núcleo', 'São partículas positivas'], 0, 'Bohr propôs níveis de energia quantizados e transições associadas à emissão ou absorção de energia.'],
+    ['Quando um elétron passa de um nível mais energético para outro menos energético, o átomo:', ['Emite energia', 'Absorve energia', 'Perde prótons', 'Transforma-se necessariamente em íon negativo'], 0, 'A diferença de energia pode ser emitida como fóton durante a transição para um nível inferior.'],
+    ['A existência do núcleo atômico foi inferida principalmente a partir:', ['Do espalhamento de partículas alfa', 'Da eletrólise da água', 'Da balança de Cavendish', 'Da decomposição térmica de sais'], 0, 'A dispersão em grandes ângulos de poucas partículas alfa revelou uma região central concentrada.'],
+    ['O modelo de Thomson ficou conhecido como “pudim de passas” porque descrevia:', ['Elétrons negativos inseridos em uma massa positiva', 'Prótons inseridos em elétrons positivos', 'Um núcleo cercado por órbitas quantizadas', 'Uma nuvem de nêutrons sem carga'], 0, 'Thomson imaginou a carga positiva distribuída, com elétrons negativos no interior do átomo.'],
+    ['Espectros de emissão em linhas são compatíveis com:', ['Transições entre níveis de energia discretos', 'Qualquer energia possível para elétrons ligados', 'A ausência de interação entre luz e matéria', 'A emissão de prótons pelo núcleo em toda transição'], 0, 'Cada linha corresponde a uma diferença específica entre níveis de energia.'],
+    ['O modelo atual descreve os elétrons principalmente por:', ['Regiões de probabilidade chamadas orbitais', 'Órbitas planetárias perfeitamente definidas', 'Pontos imóveis entre prótons', 'Uma esfera positiva sem estrutura'], 0, 'O modelo quântico descreve probabilidades de localização, não trajetórias planetárias determinadas.'],
+  ],
   'human-health': [
     ['Qual sistema transporta oxigênio e nutrientes pelo corpo?', ['Digestório', 'Circulatório', 'Excretor', 'Endócrino'], 1, 'O sistema circulatório distribui gases, nutrientes, hormônios e resíduos pelo organismo.'],
     ['A troca de gases entre o ar e o sangue ocorre principalmente:', ['Nos alvéolos pulmonares', 'No estômago', 'Nos rins', 'No intestino grosso'], 0, 'A grande superfície dos alvéolos permite difusão de O2 para o sangue e de CO2 para o ar.'],
