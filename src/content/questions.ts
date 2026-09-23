@@ -240,6 +240,9 @@ const natureExpansionEntries: Record<'human-health' | 'evolution' | 'electricity
     ['O modelo de Thomson ficou conhecido como “pudim de passas” porque descrevia:', ['Elétrons negativos inseridos em uma massa positiva', 'Prótons inseridos em elétrons positivos', 'Um núcleo cercado por órbitas quantizadas', 'Uma nuvem de nêutrons sem carga'], 0, 'Thomson imaginou a carga positiva distribuída, com elétrons negativos no interior do átomo.'],
     ['Espectros de emissão em linhas são compatíveis com:', ['Transições entre níveis de energia discretos', 'Qualquer energia possível para elétrons ligados', 'A ausência de interação entre luz e matéria', 'A emissão de prótons pelo núcleo em toda transição'], 0, 'Cada linha corresponde a uma diferença específica entre níveis de energia.'],
     ['O modelo atual descreve os elétrons principalmente por:', ['Regiões de probabilidade chamadas orbitais', 'Órbitas planetárias perfeitamente definidas', 'Pontos imóveis entre prótons', 'Uma esfera positiva sem estrutura'], 0, 'O modelo quântico descreve probabilidades de localização, não trajetórias planetárias determinadas.'],
+    ['Ao derramar água salgada na chama, ela fica amarela. Qual explicação relaciona melhor o fenômeno à estrutura atômica?', ['O sódio excitado emite fótons ao retornar a níveis de menor energia', 'O sal transforma o gás de cozinha em cloro', 'O núcleo do sódio se funde com o oxigênio', 'As proteínas da água passam a emitir elétrons'], 0, 'O calor excita elétrons dos átomos de sódio. Ao retornarem a níveis de menor energia, emitem fótons cuja energia corresponde à luz amarela observada.'],
+    ['Ao formar compostos em reações químicas, qual ideia de Dalton continua útil para explicar as proporções entre elementos?', ['Os átomos se combinam em proporções de números inteiros simples', 'Átomos são indivisíveis em qualquer transformação', 'Todos os átomos de um elemento têm sempre a mesma massa', 'Elétrons ocupam órbitas fixas em todos os elementos'], 0, 'A composição dos compostos pode ser descrita por proporções definidas entre átomos. Outros postulados de Dalton foram revistos após a descoberta de partículas subatômicas e isótopos.'],
+    ['Uma equipe compara um feixe de partículas antes e depois de atravessar uma lâmina metálica. A maioria passa, mas poucas sofrem grande desvio. Qual conclusão é apoiada por esse resultado?', ['O átomo é majoritariamente vazio e concentra carga positiva num núcleo pequeno', 'A carga positiva está distribuída igualmente por todo o átomo', 'O átomo é uma esfera maciça indivisível', 'Os elétrons ocupam necessariamente níveis de energia quantizados'], 0, 'A passagem da maioria das partículas e o grande desvio de poucas são evidências compatíveis com um núcleo pequeno e positivo, como no modelo de Rutherford.'],
   ],
   'human-health': [
     ['Qual sistema transporta oxigênio e nutrientes pelo corpo?', ['Digestório', 'Circulatório', 'Excretor', 'Endócrino'], 1, 'O sistema circulatório distribui gases, nutrientes, hormônios e resíduos pelo organismo.'],
@@ -299,9 +302,11 @@ const natureExpansionEntries: Record<'human-health' | 'evolution' | 'electricity
 };
 
 export function natureExpansionQuestions(id: keyof typeof natureExpansionEntries, topicId: TopicId = id): Question[] {
-  return natureExpansionEntries[id].map((entry, index) => ({
+  const entries = natureExpansionEntries[id];
+  const sectionSize = Math.ceil(entries.length / 3);
+  return entries.map((entry, index) => ({
     ...question(topicId, index, entry),
-    purpose: index < 3 ? 'diagnostic' : index < 6 ? 'practice' : 'review',
+    purpose: index < sectionSize ? 'diagnostic' : index < sectionSize * 2 ? 'practice' : 'review',
   }));
 }
 

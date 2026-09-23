@@ -29,10 +29,20 @@ describe('Catalog dynamics and merging', () => {
     for (const id of ['human-physiology', 'evolution', 'electricity', 'ph-hydrolysis', 'electrochemistry', 'atomic-models'] as const) {
       const topic = topicById(id, STATIC_TOPICS);
       expect(topic.lessons.length).toBeGreaterThanOrEqual(4);
-      expect(topic.questions).toHaveLength(9);
+      expect(topic.questions).toHaveLength(id === 'atomic-models' ? 12 : 9);
       expect(new Set(topic.questions.map(question => question.purpose))).toEqual(new Set(['diagnostic', 'practice', 'review']));
       expect(topic.questions.every(question => question.topicId === id)).toBe(true);
     }
+  });
+
+  test('atomic models include curated ENEM guidance grounded in past items', () => {
+    const topic = topicById('atomic-models', STATIC_TOPICS);
+    expect(topic.learningContext?.applications.length).toBeGreaterThanOrEqual(2);
+    expect(topic.learningContext?.limitations).toContain('modelo quântico');
+    expect(topic.enemGuidance?.status).toBe('reviewed');
+    expect(topic.enemGuidance?.examsAnalyzed).toContain('2017 e 2019');
+    expect(topic.enemGuidance?.sources).toHaveLength(2);
+    expect(topic.questions).toHaveLength(12);
   });
 
   test('formatEnemTag correctly generates official INEP tag strings', () => {

@@ -139,13 +139,45 @@ export const STATIC_TOPICS: Topic[] = [
       { id: 'sol3', kind: 'concept', title: 'Molaridade: medindo em mols', text: 'A concentração molar (mol/L) indica quantos mols de soluto existem em 1 litro de solução. É a unidade padrão da química universitária e do ENEM.' },
       { id: 'sol4', kind: 'recall', title: 'Diluição rápida', text: 'Se você tem 100 mL de suco com concentração 40 g/L e adiciona água até 200 mL, qual é a nova concentração?', reveal: 'O volume dobrou (de 100 para 200 mL); logo, a concentração cai pela metade: 20 g/L!' },
     ], questions: chemistryQuestions('solutions') },
-  { id: 'atomic-models', name: 'Modelos atômicos', discipline: 'Química', subtitle: 'Cada experimento revelou uma nova estrutura.', description: 'Acompanhe como as evidências experimentais transformaram as ideias sobre a estrutura do átomo.', relevance: 'Modelos atômicos ajudam a interpretar a natureza elétrica da matéria e a organização dos elementos no ENEM.', prerequisiteIds: [], priority: .86, version: 1,
+  { id: 'atomic-models', name: 'Modelos atômicos', discipline: 'Química', subtitle: 'Cada experimento revelou uma nova estrutura.', description: 'Acompanhe como evidências experimentais transformaram as explicações sobre a estrutura do átomo.', relevance: 'No ENEM, o tema aparece ligado a evidências, limites dos modelos e fenômenos observáveis, como a emissão de luz por átomos excitados.', prerequisiteIds: [], priority: .86, version: 1,
+    learningContext: {
+      overview: 'Modelos atômicos são explicações científicas construídas a partir de evidências disponíveis em cada época. Raios catódicos, espalhamento de partículas e espectros de luz levaram a diferentes representações, cada uma útil dentro de seus limites.',
+      applications: [
+        'O teste de chama relaciona a cor emitida por certos elementos às transições de elétrons entre níveis de energia.',
+        'Técnicas de espectroscopia identificam elementos em materiais e ajudam a investigar a composição de estrelas.',
+        'A estrutura eletrônica ajuda a explicar propriedades periódicas e a formação de ligações químicas.',
+      ],
+      limitations: 'Os desenhos de Dalton, Thomson, Rutherford e Bohr são modelos, não fotografias do átomo. O modelo de Bohr explica bem alguns aspectos do hidrogênio, mas o modelo quântico é necessário para descrever átomos mais complexos; elétrons não percorrem órbitas planetárias fixas no modelo atual.',
+    },
+    enemGuidance: {
+      status: 'reviewed',
+      priorities: [
+        'Identificar que evidência experimental motivou cada mudança de modelo.',
+        'Conectar níveis de energia à absorção e à emissão de luz, como na chama amarela do sódio.',
+        'Reconhecer quais ideias de Dalton continuam válidas e quais foram revistas com novas evidências.',
+      ],
+      commonPatterns: [
+        'Contextualização em situações cotidianas ou em relatos históricos, seguida da interpretação de um fenômeno ou postulado.',
+        'Comparação entre modelos pelo que explicam e por suas limitações, em vez de apenas ordenar nomes e datas.',
+        'Aplicação de conceitos sobre elétrons excitados e emissão de fótons para explicar a cor característica de uma chama.',
+      ],
+      lowerIncidence: [
+        'Nas questões analisadas, biografias e datas dos cientistas não são o foco; o raciocínio depende de interpretar evidências e conceitos.',
+        'Não foi necessário usar cálculos avançados de órbitas ou resolver equações quânticas.',
+      ],
+      examsAnalyzed: 'ENEM regular 2017 e 2019 — itens de Ciências da Natureza sobre emissão de luz e teoria de Dalton.',
+      sources: [
+        'INEP, ENEM 2017, 2º dia, caderno amarelo, questão 91 — teste de chama e emissão de fótons. https://download.inep.gov.br/educacao_basica/enem/provas/2017/2017_PV_impresso_D2_CD5.pdf',
+        'INEP, ENEM 2019, 2º dia, questão sobre os postulados de Dalton (questão 128 no caderno azul). Provas oficiais: https://www.gov.br/inep/pt-br/areas-de-atuacao/avaliacao-e-exames-educacionais/enem/provas-e-gabaritos',
+      ],
+    },
     lessons: [
       { id: 'am1', kind: 'concept', title: 'Dalton: a matéria em partículas', text: 'Dalton descreveu átomos como partículas maciças e indivisíveis. Seu modelo explica proporções em reações, mas não inclui partículas subatômicas.' },
       { id: 'am2', kind: 'example', title: 'Thomson encontra o elétron', text: 'Experimentos com raios catódicos revelaram partículas negativas. Thomson propôs elétrons inseridos em uma distribuição de carga positiva.' },
       { id: 'am3', kind: 'concept', title: 'Rutherford revela o núcleo', text: 'Na experiência da lâmina de ouro, a maioria das partículas alfa atravessou a lâmina e poucas desviaram muito. O átomo é majoritariamente vazio, com carga positiva concentrada num núcleo pequeno.' },
-      { id: 'am4', kind: 'concept', title: 'Bohr e os níveis de energia', text: 'Bohr propôs níveis de energia definidos para elétrons. Transições entre níveis envolvem absorção ou emissão de energia. O modelo quântico atual descreve regiões de probabilidade, não órbitas planetárias fixas.' },
-      { id: 'am5', kind: 'recall', title: 'Ligue evidência e modelo', text: 'Que observação no experimento da lâmina de ouro levou Rutherford a propor um núcleo pequeno e denso?', reveal: 'O desvio acentuado de poucas partículas alfa indicava uma região central que concentrava carga positiva e massa.' },
+      { id: 'am4', kind: 'example', title: 'Bohr explica a cor da chama', text: 'O calor pode excitar elétrons de certos átomos. Ao retornarem a níveis de menor energia, eles emitem fótons. No teste de chama, a emissão característica do sódio é amarela.', formula: 'energia absorvida → elétron excitado → fóton emitido' },
+      { id: 'am5', kind: 'pitfall', title: 'Um modelo tem alcance e limites', text: 'Não trate as representações como fotografias nem suponha que uma teoria antiga estava simplesmente “errada”: cada modelo respondeu a evidências e problemas de seu tempo. O modelo de Bohr é útil para níveis de energia, mas não descreve adequadamente átomos complexos.' },
+      { id: 'am6', kind: 'recall', title: 'Ligue evidência e modelo', text: 'Que observação na lâmina de ouro levou Rutherford a propor um núcleo pequeno e denso? E o que a chama amarela do sódio evidencia?', reveal: 'O desvio acentuado de poucas partículas alfa indicava uma região central que concentrava carga positiva e massa. A chama amarela resulta de fótons emitidos quando elétrons excitados retornam a níveis de menor energia.' },
     ], questions: natureExpansionQuestions('atomic-models') },
   { id: 'human-physiology', name: 'Corpo humano e saúde', discipline: 'Biologia', subtitle: 'Sistemas que trabalham em conjunto.', description: 'Relacione digestão, respiração, circulação, excreção, coordenação e imunidade à manutenção do organismo.', relevance: 'A integração entre sistemas do corpo ajuda a interpretar situações de saúde, prevenção e equilíbrio interno no ENEM.', prerequisiteIds: ['cytology'], priority: .89, version: 1,
     lessons: [
