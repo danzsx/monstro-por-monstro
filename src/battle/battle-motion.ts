@@ -13,5 +13,10 @@ export function battleMotion(battle: BattleState): { mood: MonsterMood; reaction
   if (battle.phase === 'feedback' && last?.correct) {
     return { mood: 'ready', reaction: { kind: 'recoil', key: `${session}:answer:${last.id}` } };
   }
+  if (battle.phase === 'repair') {
+    return battle.repaired
+      ? { mood: 'friendly', reaction: { kind: 'celebrate', key: `${session}:repair:${battle.questionIndex}` } }
+      : { mood: 'calm' };
+  }
   return { mood: ['lesson', 'feedback'].includes(battle.phase) ? 'ready' : 'calm' };
 }

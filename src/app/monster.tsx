@@ -3,6 +3,7 @@ import { View, useWindowDimensions } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ArrowLeft, ArrowRight, BookOpen, FlaskConical, Microscope, Target } from 'lucide-react-native';
 import { useApp } from '@/data/provider';
+import { calculateRetention } from '@/learning/engine';
 import { Button, Card, Eyebrow, Heading, Monster, Page, Pill, Txt } from '@/ui/primitives';
 import { colors as c } from '@/ui/theme';
 import type { EnemGuidance } from '@/learning/types';
@@ -36,11 +37,13 @@ function EnemCard({ guidance }: { guidance?: EnemGuidance }) {
 
 export default function MonsterKnowledgeScreen() {
   const { topicId } = useLocalSearchParams<{ topicId: string }>();
-  const { topicById } = useApp();
+  const { topicById, state } = useApp();
   const { width } = useWindowDimensions();
   const topic = useMemo(() => {
     try { return topicById(topicId); } catch { return null; }
   }, [topicById, topicId]);
+  const mastery = topic ? state.masteries[topic.id] : undefined;
+  const retention = mastery ? calculateRetention(mastery, new Date().toISOString()) : 0;
 
   if (!topic) return <Page narrow><Button title="Voltar ao meu bestiário" variant="secondary" onPress={() => router.replace('/bestiary')} /><Card><Heading>Não encontramos esse monstro.</Heading><Txt color={c.muted}>Ele pode ter sido removido do catálogo.</Txt></Card></Page>;
 
@@ -60,6 +63,26 @@ export default function MonsterKnowledgeScreen() {
     {context?.applications?.length ? <Card style={{ gap: 17 }}><View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}><FlaskConical color={c.purple} size={21} /><Heading size={22}>Onde esse conhecimento ganha vida</Heading></View><BulletList items={context.applications} /></Card> : null}
     {context?.limitations ? <Card style={{ backgroundColor: c.peach, gap: 12 }}><View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}><Microscope color={c.purple} size={21} /><Heading size={22}>Até onde ele ajuda?</Heading></View><Txt style={{ lineHeight: 25 }}>{context.limitations}</Txt></Card> : null}
     <EnemCard guidance={topic.enemGuidance} />
+    {mastery?.encountered && <Card style={{ backgroundColor: '#FFFCF9', gap: 14 }}>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Eyebrow color={c.purple}>SAÚDE DA SUA MEMÓRIA</Eyebrow>
+        <Pill green={retention >= 0.75}>{retention >= 0.75 ? 'MEMÓRIA VIVA' : 'PRECISA DE REVISÃO'}</Pill>
+      </View>
+      <View style={{ gap: 6 }}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+          <Txt size={13} color={c.muted}>Retenção estimada contínua</Txt>
+          <Txt size={14} weight="bold" color={retention >= 0.75 ? c.greenDark : c.purple}>{Math.round(retention * 100)}%</Txt>
+        </View>
+        <View style={{ height: 7, backgroundColor: c.lavender, borderRadius: 20, overflow: 'hidden' }}>
+          <View style={{ height: 7, width: `${Math.round(retention * 100)}%`, backgroundColor: retention >= 0.75 ? c.green : c.purple, borderRadius: 20 }} />
+        </View>
+      </View>
+      <Txt size={12} color={c.muted}>
+        {mastery.nextReviewAt
+          ? `Próxima revisão agendada para ${new Date(mastery.nextReviewAt).toLocaleDateString('pt-BR')}. A curva de esquecimento ajuda você a revisar no momento exato antes da perda de retenção.`
+          : 'Continue praticando para consolidar essa criatura no seu Bestiário.'}
+      </Txt>
+    </Card>}
     <View style={{ flexDirection: horizontal ? 'row' : 'column', gap: 10 }}><View style={{ flex: 1 }}><Button title="Voltar para minha jornada" onPress={() => router.replace('/')} icon={<ArrowRight size={17} color={c.purple} />} /></View><View style={{ flex: 1 }}><Button title="Ver meu bestiário" variant="secondary" onPress={() => router.replace('/bestiary')} /></View></View>
   </Page>;
 }

@@ -9,6 +9,7 @@ export interface AffectiveCheckIn { topicId: TopicId; feeling: Feeling; barrier?
 export interface AttemptEvent {
   id: string; questionId: string; topicId: TopicId; answer: number; correct: boolean;
   assisted: boolean; at: string; source: 'diagnostic' | 'practice' | 'review'; battleId?: string;
+  repaired?: boolean; repairAttemptId?: string;
 }
 export interface TopicMastery {
   topicId: TopicId; score: number; evidence: number; encountered: boolean;
@@ -16,11 +17,19 @@ export interface TopicMastery {
   lastPracticedAt?: string; immediatePassedAt?: string; nextReviewAt?: string;
   reviewLevel: number; deferredAt?: string;
   assessmentEvidence?: AttemptEvent[];
+  retention?: number;
 }
 export type Masteries = Record<string, TopicMastery>;
+export interface RepairCheck {
+  prompt: string;
+  options: string[];
+  answer: number;
+  insight: string;
+}
 export interface Question {
   id: string; topicId: TopicId; difficulty: 1 | 2 | 3; purpose: 'diagnostic' | 'practice' | 'review';
   prompt: string; options: string[]; answer: number; explanation: string;
+  repairCheck?: RepairCheck;
 }
 export interface LessonBlock { id: string; kind: 'concept' | 'example' | 'recall' | 'summary' | 'pitfall' | 'tip' | 'review' | (string & {}); title: string; text: string; reveal?: string; formula?: string }
 export interface LearningContext {

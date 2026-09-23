@@ -17,3 +17,18 @@ test('envios repetidos na tela de feedback não criam novas respostas', () => {
   const result = battleReducer(state, action); expect(result.phase).toBe('feedback');
   expect(battleReducer(result, action).attempts).toHaveLength(1);
 });
+test('ciclo de reparação imediata permite fixar conceito após erro e avança', () => {
+  const state = { ...initial(), phase: 'question' as const };
+  const errorAction = { type: 'ANSWER' as const, attempt: { id: 'a1', questionId: state.plan.questionIds[0], topicId: 'proportions' as const, answer: 1, correct: false, assisted: false, at, source: 'practice' as const } };
+  const feedbackState = battleReducer(state, errorAction);
+  expect(feedbackState.phase).toBe('feedback');
+  const repairState = battleReducer(feedbackState, { type: 'START_REPAIR' });
+  expect(repairState.phase).toBe('repair');
+  expect(repairState.repaired).toBeFalsy();
+  const repairedState = battleReducer(repairState, { type: 'REPAIR_ANSWER', correct: true, chosenIndex: 0 });
+  expect(repairedState.repaired).toBe(true);
+  expect(repairedState.attempts[0].repaired).toBe(true);
+  const nextState = battleReducer(repairedState, { type: 'NEXT' });
+  expect(nextState.phase).toBe('question');
+  expect(nextState.questionIndex).toBe(1);
+});

@@ -1,4 +1,4 @@
-import { buildBattlePlan, DAY, emptyMasteries, intervention, isDue, prerequisitesMet, scheduleReview, selectNextMonster, updateMastery } from './engine';
+import { buildBattlePlan, buildRepairChallenge, calculateRetention, DAY, effectiveScore, emptyMasteries, intervention, isDue, prerequisitesMet, scheduleReview, selectNextMonster, updateMastery } from './engine';
 import { evaluateDiagnostic, nextDiagnosticQuestion } from '@/diagnostic/engine';
 import { TOPICS, questionById } from '@/content/catalog';
 import { AttemptEvent, TopicId } from './types';
@@ -63,6 +63,26 @@ describe('motor de aprendizagem', () => {
   test('retorna vazio quando não há conteúdo elegível ou revisão vencida', () => {
     const m = emptyMasteries(); for (const t of TOPICS) m[t.id] = { ...m[t.id], score: 1, evidence: 5, stage: 'mastered', nextReviewAt: later(3) };
     expect(selectNextMonster(m, NOW)).toBeNull(); expect(scheduleReview(NOW, 99)).toBe(later(30));
+  });
+  test('curva contínua de esquecimento decai gradativamente após o prazo de revisão', () => {
+    const m = emptyMasteries().proportions;
+    expect(calculateRetention(m, NOW)).toBe(0);
+    const scheduled = { ...m, encountered: true, score: 0.9, stage: 'mastered' as const, lastPracticedAt: NOW, nextReviewAt: later(3) };
+    expect(calculateRetention(scheduled, NOW)).toBe(1);
+    expect(calculateRetention(scheduled, later(1.5))).toBeGreaterThan(0.85);
+    expect(calculateRetention(scheduled, later(3))).toBe(0.85);
+    const overdue = calculateRetention(scheduled, later(10));
+    expect(overdue).toBeLessThan(0.85);
+    expect(overdue).toBeGreaterThanOrEqual(0.1);
+    expect(effectiveScore(scheduled, later(10))).toBe(Math.round(0.9 * overdue * 100) / 100);
+  });
+  test('gerador de reparação cria desafio conceitual consistente e focado', () => {
+    const q = questionById('proportions-6');
+    const challenge = buildRepairChallenge(q);
+    expect(challenge.prompt).toBeTruthy();
+    expect(challenge.options).toHaveLength(2);
+    expect(challenge.options[challenge.answer]).toContain(q.options[q.answer]);
+    expect(challenge.insight).toBe(q.explanation);
   });
 });
 describe('diagnóstico adaptativo', () => {

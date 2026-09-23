@@ -49,6 +49,8 @@ export function useActions() {
         return { ...s, activeBattle: battleReducer(b, { type: 'ANSWER', attempt }) };
       });
     },
+    startRepair: () => commit(s => s.activeBattle ? { ...s, activeBattle: battleReducer(s.activeBattle, { type: 'START_REPAIR' }) } : s),
+    answerRepair: (correct: boolean, chosenIndex: number) => commit(s => s.activeBattle ? { ...s, activeBattle: battleReducer(s.activeBattle, { type: 'REPAIR_ANSWER', correct, chosenIndex }) } : s),
     finishBattle: () => {
       const at = timestamp();
       return commit(s => {
