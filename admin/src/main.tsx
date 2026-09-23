@@ -9,14 +9,23 @@ type BlockKind = 'concept' | 'example' | 'recall' | 'summary' | 'pitfall' | 'tip
 type LearningContext = { overview: string; applications: string[]; limitations: string };
 type EnemGuidance = { status: 'pending' | 'reviewed'; priorities: string[]; commonPatterns: string[]; lowerIncidence: string[]; examsAnalyzed: string; sources: string[] };
 type TopicVersion = { id: string; topic_id: string; version: number; status: Status; name: string; slug: string; discipline: string; subtitle: string; description: string; relevance: string; priority: number; monster_asset_path: string | null; learning_context: LearningContext | null; enem_guidance: EnemGuidance | null; updated_at: string; };
+type EnemMetadata = {
+  exam?: string;
+  year?: number;
+  color?: string;
+  question_number?: number;
+  competency?: string;
+  ability?: string;
+  label?: string;
+};
 type Block = { id?: string; topic_version_id?: string; position: number; kind: BlockKind; title: string; body: string; formula: string; };
-type Question = { id?: string; topic_version_id?: string; question_key: string; version: number; purpose: 'diagnostic' | 'practice' | 'review'; difficulty: number; prompt: string; options: string[]; answer: number; explanation: string; };
+type Question = { id?: string; topic_version_id?: string; question_key: string; version: number; purpose: 'diagnostic' | 'practice' | 'review'; difficulty: number; prompt: string; options: string[]; answer: number; explanation: string; enem_metadata?: EnemMetadata | null; };
 
 const blankContext: LearningContext = { overview: '', applications: [], limitations: '' };
 const blankEnem: EnemGuidance = { status: 'pending', priorities: [], commonPatterns: [], lowerIncidence: [], examsAnalyzed: '', sources: [] };
 const blankTopic: Omit<TopicVersion, 'id' | 'updated_at'> = { topic_id: '', version: 1, status: 'draft', name: '', slug: '', discipline: '', subtitle: '', description: '', relevance: '', priority: 0, monster_asset_path: null, learning_context: blankContext, enem_guidance: blankEnem };
 const blankBlock = (): Block => ({ position: 0, kind: 'concept', title: '', body: '', formula: '' });
-const blankQuestion = (): Question => ({ question_key: `q-${Date.now()}`, version: 1, purpose: 'practice', difficulty: 1, prompt: '', options: ['', '', '', ''], answer: 0, explanation: '' });
+const blankQuestion = (): Question => ({ question_key: `q-${Date.now()}`, version: 1, purpose: 'practice', difficulty: 1, prompt: '', options: ['', '', '', ''], answer: 0, explanation: '', enem_metadata: null });
 function validateQuestions(questions: Question[]) {
   const issues: string[] = [];
   questions.forEach((question, index) => {
@@ -82,7 +91,11 @@ function TopicEditor({ topic, onDone }: { topic: TopicVersion | null; onDone: ()
   const update = (key: keyof typeof form, value: string | number | Status | null) => setForm(previous => ({ ...previous, [key]: value }));
   const updateContext = (key: keyof LearningContext, value: string | string[]) => setForm(previous => ({ ...previous, learning_context: { ...(previous.learning_context ?? blankContext), [key]: value } }));
   const updateEnem = (key: keyof EnemGuidance, value: string | string[]) => setForm(previous => ({ ...previous, enem_guidance: { ...(previous.enem_guidance ?? blankEnem), [key]: value } }));
-  async function save(event: FormEvent) { event.preventDefault(); const issues = validateQuestions(questions); if (issues.length) { setError(issues.join(' ')); return; } setSaving(true); setError(''); setMessage(''); const user = (await supabase!.auth.getUser()).data.user; if (!user) { setError('Sessão expirada.'); setSaving(false); return; } const payload = { ...form, topic_id: form.topic_id || form.slug, slug: form.slug || form.topic_id, updated_by: user.id, created_by: user.id }; const result = topic ? await supabase!.from('topic_versions').update(payload).eq('id', topic.id).select().single() : await supabase!.from('topic_versions').insert(payload).select().single(); if (result.error || !result.data) { setError(result.error?.message ?? 'Não foi possível salvar.'); setSaving(false); return; } const version = result.data as TopicVersion; if (blocks.length) { await supabase!.from('lesson_blocks').delete().eq('topic_version_id', version.id); const blockResult = await supabase!.from('lesson_blocks').insert(blocks.map((block, index) => ({ topic_version_id: version.id, position: index, kind: block.kind, title: block.title, body: block.body, formula: block.formula || null }))); if (blockResult.error) setError(blockResult.error.message); } if (questions.length) { await supabase!.from('question_versions').delete().eq('topic_version_id', version.id); const questionResult = await supabase!.from('question_versions').insert(questions.map(question => ({ ...question, topic_version_id: version.id, options: question.options, created_by: user.id, updated_by: user.id }))); if (questionResult.error) setError(questionResult.error.message); } await supabase!.from('editorial_audit_log').insert({ actor_id: user.id, entity_type: 'topic_version', entity_id: version.id, action: topic ? 'updated' : 'created', after_data: payload }); setMessage('Salvo com sucesso.'); setSaving(false); }
+  async function save(event: FormEvent) { event.preventDefault(); const issues = validateQuestions(questions); if (issues.length) { setError(issues.join(' ')); return; } setSaving(true); setError(''); setMessage(''); const user = (await supabase!.auth.getUser()).data.user; if (!user) { setError('Sessão expirada.'); setSaving(false); return; } const payload = { ...form, topic_id: form.topic_id || form.slug, slug: form.slug || form.topic_id, updated_by: user.id, created_by: user.id }; const result = topic ? await supabase!.from('topic_versions').update(payload).eq('id', topic.id).select().single() : await supabase!.from('topic_versions').insert(payload).select().single(); if (result.error || !result.data) { setError(result.error?.message ?? 'Não foi possível salvar.'); setSaving(false); return; } const version = result.data as TopicVersion; if (blocks.length) { await supabase!.from('lesson_blocks').delete().eq('topic_version_id', version.id); const blockResult = await supabase!.from('lesson_blocks').insert(blocks.map((block, index) => ({ topic_version_id: version.id, position: index, kind: block.kind, title: block.title, body: block.body, formula: block.formula || null }))); if (blockResult.error) setError(blockResult.error.message); }
+    if (questions.length) { await supabase!.from('question_versions').delete().eq('topic_version_id', version.id); const questionResult = await supabase!.from('question_versions').insert(questions.map(question => ({ ...question, topic_version_id: version.id, options: question.options, enem_metadata: question.enem_metadata && (question.enem_metadata.year || question.enem_metadata.label) ? question.enem_metadata : null, created_by: user.id, updated_by: user.id }))); if (questionResult.error) setError(questionResult.error.message); }
+    await supabase!.from('editorial_audit_log').insert({ actor_id: user.id, entity_type: 'topic_version', entity_id: version.id, action: topic ? 'updated' : 'created', after_data: payload });
+    setMessage('Salvo com sucesso.'); setSaving(false);
+  }
   async function changeStatus(status: Status) { if (!topic) { setError('Salve o conteúdo antes de alterar o status.'); return; } const issues = validateQuestions(questions); const enem = form.enem_guidance ?? blankEnem; if (status === 'published' && enem.status === 'reviewed' && (!enem.examsAnalyzed.trim() || enem.sources.length === 0)) { setError('Para publicar a análise do ENEM como revisada, informe as provas/período analisados e ao menos uma fonte.'); return; } if (status === 'published' && (!form.name || !form.description || blocks.length === 0 || questions.length === 0 || issues.length)) { setError(issues.join(' ') || 'Para publicar, preencha nome, descrição, pelo menos uma aula e uma questão.'); return; } const user = (await supabase!.auth.getUser()).data.user; const { error: statusError } = await supabase!.from('topic_versions').update({ status, learning_context: form.learning_context ?? blankContext, enem_guidance: form.enem_guidance ?? blankEnem, published_at: status === 'published' ? new Date().toISOString() : null, updated_by: user?.id }).eq('id', topic.id); if (statusError) { setError(statusError.message); return; } if (status === 'published') { const { error: bridgeError } = await supabase!.rpc('publish_topic_version', { p_topic_version_id: topic.id }); if (bridgeError) { setError(`Publicado no editorial, mas não foi possível atualizar o catálogo do aluno: ${bridgeError.message}`); return; } } update('status', status); setMessage(`Status alterado para ${status === 'published' ? 'publicado' : status === 'review' ? 'em revisão' : 'rascunho'}.`); }
   return <form className="content editor" onSubmit={save}><div className="editor-actions"><button type="button" className="link-button" onClick={onDone}>← Voltar</button><div>{message && <span className="success">{message}</span>}<button type="submit" className="primary" disabled={saving}>{saving ? 'Salvando…' : 'Salvar rascunho'}</button></div></div>{error && <div className="error">{error}</div>}<div className="editor-layout"><div className="editor-main"><Section title="Identidade do monstro" hint="Esses dados aparecem no bestiário e na tela inicial."><div className="form-grid"><Field label="Nome"><input required value={form.name} onChange={e => update('name', e.target.value)} placeholder="Ex.: Razões e proporções" /></Field><Field label="ID / slug"><input required value={form.slug} onChange={e => { update('slug', e.target.value); update('topic_id', e.target.value); }} placeholder="ex.: proportions" /></Field><Field label="Disciplina"><input required value={form.discipline} onChange={e => update('discipline', e.target.value)} placeholder="Matemática" /></Field><Field label="Prioridade"><input type="number" step="0.05" value={form.priority} onChange={e => update('priority', Number(e.target.value))} /></Field></div><Field label="Subtítulo"><input value={form.subtitle} onChange={e => update('subtitle', e.target.value)} placeholder="Uma frase que convida para a batalha" /></Field><Field label="Descrição"><textarea required rows={3} value={form.description} onChange={e => update('description', e.target.value)} /></Field><Field label="Relevância para o ENEM"><textarea rows={3} value={form.relevance} onChange={e => update('relevance', e.target.value)} /></Field></Section><Section title="Conheça seu monstro" hint="Explique o assunto no mundo real. Preencha aplicações e limites em tópicos, um por linha."><Field label="O que é e para que serve"><textarea rows={4} value={form.learning_context?.overview ?? ''} onChange={e => updateContext('overview', e.target.value)} placeholder="Explique a ideia central sem transformar a visão geral em mais uma aula." /></Field><Field label="Onde esse conhecimento é usado (um por linha)"><textarea rows={4} value={lineText(form.learning_context?.applications)} onChange={e => updateContext('applications', lines(e.target.value))} placeholder="Ex.: laboratório de fertilização: acompanhar as primeiras divisões celulares." /></Field><Field label="Limites e quando não se aplica"><textarea rows={3} value={form.learning_context?.limitations ?? ''} onChange={e => updateContext('limitations', e.target.value)} placeholder="Explique o que esse conhecimento ajuda a entender e o que exige outros dados ou métodos." /></Field></Section><Section title="Como cai no ENEM" hint="Só apresente tendências quando a análise das provas estiver revisada. Listas: um item por linha."><Field label="Estado da análise"><select value={form.enem_guidance?.status ?? 'pending'} onChange={e => updateEnem('status', e.target.value as EnemGuidance['status'])}><option value="pending">Pendente — ocultar tendências</option><option value="reviewed">Revisada — exibir orientação</option></select></Field><Field label="Onde colocar atenção"><textarea rows={3} value={lineText(form.enem_guidance?.priorities)} onChange={e => updateEnem('priorities', lines(e.target.value))} /></Field><Field label="Padrões observados nas questões"><textarea rows={3} value={lineText(form.enem_guidance?.commonPatterns)} onChange={e => updateEnem('commonPatterns', lines(e.target.value))} /></Field><Field label="Tópicos de menor incidência"><textarea rows={3} value={lineText(form.enem_guidance?.lowerIncidence)} onChange={e => updateEnem('lowerIncidence', lines(e.target.value))} /></Field><Field label="Provas e período analisados"><input value={form.enem_guidance?.examsAnalyzed ?? ''} onChange={e => updateEnem('examsAnalyzed', e.target.value)} placeholder="Ex.: ENEM regular, 2015–2025" /></Field><Field label="Fontes (uma por linha)"><textarea rows={3} value={lineText(form.enem_guidance?.sources)} onChange={e => updateEnem('sources', lines(e.target.value))} placeholder="Ex.: Caderno azul, ENEM 2024, questão 42" /></Field></Section><Section title="Aulas" hint="Monte a sequência didática em blocos curtos e ordenados."><div className="section-list">{blocks.map((block, index) => <BlockEditor key={block.id ?? index} block={block} index={index} onChange={next => setBlocks(current => current.map((item, itemIndex) => itemIndex === index ? next : item))} onRemove={() => setBlocks(current => current.filter((_, itemIndex) => itemIndex !== index))} />)}</div><button type="button" className="secondary" onClick={() => setBlocks(current => [...current, { ...blankBlock(), position: current.length }])}>+ Adicionar bloco</button></Section><Section title="Questões" hint="A prática é a evidência de aprendizagem."><div className="section-list">{questions.map((question, index) => <QuestionEditor key={question.id ?? question.question_key} question={question} onChange={next => setQuestions(current => current.map((item, itemIndex) => itemIndex === index ? next : item))} onRemove={() => setQuestions(current => current.filter((_, itemIndex) => itemIndex !== index))} />)}</div><button type="button" className="secondary" onClick={() => setQuestions(current => [...current, blankQuestion()])}>+ Adicionar questão</button></Section></div><aside className="editor-side"><Section title="Publicação" hint="Conteúdo publicado fica disponível para os alunos."><StatusPill status={form.status} /><div className="status-actions"><button type="button" className="secondary" onClick={() => changeStatus('review')}>Enviar para revisão</button><button type="button" className="primary" onClick={() => changeStatus('published')}>Publicar</button>{form.status === 'published' && <button type="button" className="link-button danger" onClick={() => changeStatus('archived')}>Arquivar</button>}</div></Section><Section title="Pré-visualização"><div className="preview-card"><span className="monster-mini">✦</span><strong>{form.name || 'Nome do monstro'}</strong><p>{form.description || 'A descrição aparecerá aqui.'}</p><small>{blocks.length} blocos · {questions.length} questões</small></div></Section></aside></div></form>;
 }
@@ -90,6 +103,77 @@ function TopicEditor({ topic, onDone }: { topic: TopicVersion | null; onDone: ()
 function Section({ title, hint, children }: { title: string; hint?: string; children: React.ReactNode }) { return <section className="editor-section"><div className="section-heading"><h3>{title}</h3>{hint && <p>{hint}</p>}</div>{children}</section>; }
 function Field({ label, children }: { label: string; children: React.ReactNode }) { return <label className="field">{label}{children}</label>; }
 function BlockEditor({ block, index, onChange, onRemove }: { block: Block; index: number; onChange: (block: Block) => void; onRemove: () => void }) { return <div className="item-card"><div className="item-head"><strong>Bloco {index + 1}</strong><button type="button" className="link-button danger" onClick={onRemove}>Remover</button></div><div className="form-grid"><Field label="Tipo"><select value={block.kind} onChange={e => onChange({ ...block, kind: e.target.value as BlockKind })}>{(['concept', 'example', 'recall', 'summary', 'pitfall', 'tip', 'review'] as BlockKind[]).map(kind => <option key={kind} value={kind}>{kind}</option>)}</select></Field><Field label="Título"><input value={block.title} onChange={e => onChange({ ...block, title: e.target.value })} /></Field></div><Field label="Texto"><textarea rows={4} value={block.body} onChange={e => onChange({ ...block, body: e.target.value })} /></Field><Field label="Fórmula (opcional)"><input value={block.formula} onChange={e => onChange({ ...block, formula: e.target.value })} /></Field></div>; }
-function QuestionEditor({ question, onChange, onRemove }: { question: Question; onChange: (question: Question) => void; onRemove: () => void }) { return <div className="item-card"><div className="item-head"><strong>Questão · {question.purpose}</strong><button type="button" className="link-button danger" onClick={onRemove}>Remover</button></div><Field label="Enunciado"><textarea rows={3} value={question.prompt} onChange={e => onChange({ ...question, prompt: e.target.value })} /></Field><div className="options">{question.options.map((option, index) => <label key={index} className="option"><input type="radio" checked={question.answer === index} onChange={() => onChange({ ...question, answer: index })} /><input value={option} onChange={e => onChange({ ...question, options: question.options.map((item, itemIndex) => itemIndex === index ? e.target.value : item) })} placeholder={`Alternativa ${index + 1}`} /></label>)}</div><div className="form-grid"><Field label="Finalidade"><select value={question.purpose} onChange={e => onChange({ ...question, purpose: e.target.value as Question['purpose'] })}><option value="diagnostic">Diagnóstico</option><option value="practice">Prática</option><option value="review">Revisão</option></select></Field><Field label="Dificuldade"><select value={question.difficulty} onChange={e => onChange({ ...question, difficulty: Number(e.target.value) })}><option value={1}>1 · base</option><option value={2}>2 · intermediária</option><option value={3}>3 · desafio</option></select></Field></div><Field label="Explicação"><textarea rows={3} value={question.explanation} onChange={e => onChange({ ...question, explanation: e.target.value })} /></Field></div>; }
+function QuestionEditor({ question, onChange, onRemove }: { question: Question; onChange: (question: Question) => void; onRemove: () => void }) {
+  const meta = question.enem_metadata || {};
+  const updateMeta = (key: keyof EnemMetadata, val: any) => {
+    onChange({
+      ...question,
+      enem_metadata: {
+        ...meta,
+        [key]: val || undefined
+      }
+    });
+  };
+  const tagPreview = meta.label || (meta.year ? `${meta.exam || 'ENEM'} ${meta.year}${meta.color ? ` · Caderno ${meta.color}` : ''}${meta.question_number ? ` · Q${meta.question_number}` : ''}${meta.ability ? ` · ${meta.ability}` : ''}` : '');
+
+  return (
+    <div className="item-card">
+      <div className="item-head">
+        <div>
+          <strong>Questão · {question.purpose}</strong>
+          {tagPreview && <span className="status published small" style={{ marginLeft: 8 }}>{tagPreview}</span>}
+        </div>
+        <button type="button" className="link-button danger" onClick={onRemove}>Remover</button>
+      </div>
+      <Field label="Enunciado">
+        <textarea rows={3} value={question.prompt} onChange={e => onChange({ ...question, prompt: e.target.value })} />
+      </Field>
+      <div className="options">
+        {question.options.map((option, index) => (
+          <label key={index} className="option">
+            <input type="radio" checked={question.answer === index} onChange={() => onChange({ ...question, answer: index })} />
+            <input value={option} onChange={e => onChange({ ...question, options: question.options.map((item, itemIndex) => itemIndex === index ? e.target.value : item) })} placeholder={`Alternativa ${index + 1}`} />
+          </label>
+        ))}
+      </div>
+      <div className="form-grid">
+        <Field label="Finalidade">
+          <select value={question.purpose} onChange={e => onChange({ ...question, purpose: e.target.value as Question['purpose'] })}>
+            <option value="diagnostic">Diagnóstico</option>
+            <option value="practice">Prática</option>
+            <option value="review">Revisão</option>
+          </select>
+        </Field>
+        <Field label="Dificuldade">
+          <select value={question.difficulty} onChange={e => onChange({ ...question, difficulty: Number(e.target.value) })}>
+            <option value={1}>1 · base</option>
+            <option value={2}>2 · intermediária</option>
+            <option value={3}>3 · desafio</option>
+          </select>
+        </Field>
+      </div>
+      <Field label="Explicação">
+        <textarea rows={3} value={question.explanation} onChange={e => onChange({ ...question, explanation: e.target.value })} />
+      </Field>
+      <div style={{ marginTop: 12, padding: 12, borderRadius: 8, background: '#f5eff8', border: '1px solid #e5d8ee' }}>
+        <p className="eyebrow" style={{ marginBottom: 8, fontSize: 10 }}>Metadados Oficiais ENEM / Matriz INEP (opcional)</p>
+        <div className="form-grid">
+          <Field label="Ano ENEM">
+            <input type="number" placeholder="ex.: 2024" value={meta.year ?? ''} onChange={e => updateMeta('year', e.target.value ? Number(e.target.value) : undefined)} />
+          </Field>
+          <Field label="Caderno / Cor">
+            <input placeholder="ex.: Azul" value={meta.color ?? ''} onChange={e => updateMeta('color', e.target.value)} />
+          </Field>
+          <Field label="Nº da Questão">
+            <input type="number" placeholder="ex.: 142" value={meta.question_number ?? ''} onChange={e => updateMeta('question_number', e.target.value ? Number(e.target.value) : undefined)} />
+          </Field>
+          <Field label="Habilidade / Matriz INEP">
+            <input placeholder="ex.: C5 · H19" value={meta.ability ?? ''} onChange={e => updateMeta('ability', e.target.value)} />
+          </Field>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 createRoot(document.getElementById('root')!).render(<App />);

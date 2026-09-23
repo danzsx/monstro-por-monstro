@@ -1,10 +1,28 @@
-import { STATIC_TOPICS, mergeCatalogs, fetchPublishedCatalog, topicById } from './catalog';
+import { STATIC_TOPICS, mergeCatalogs, fetchPublishedCatalog, topicById, formatEnemTag } from './catalog';
 import { Topic } from '@/learning/types';
 
 describe('Catalog dynamics and merging', () => {
-  test('STATIC_TOPICS contains 4 base topics', () => {
-    expect(STATIC_TOPICS).toHaveLength(4);
-    expect(STATIC_TOPICS.map(t => t.id)).toEqual(['proportions', 'rule-of-three', 'cytology', 'genetics']);
+  test('STATIC_TOPICS contains 11 base topics across all core ENEM disciplines', () => {
+    expect(STATIC_TOPICS).toHaveLength(11);
+    expect(STATIC_TOPICS.map(t => t.id)).toEqual([
+      'proportions',
+      'rule-of-three',
+      'cytology',
+      'genetics',
+      'kinematics',
+      'newton-laws',
+      'calorimetry',
+      'stoichiometry',
+      'solutions',
+      'ecology',
+      'language-functions',
+    ]);
+  });
+
+  test('formatEnemTag correctly generates official INEP tag strings', () => {
+    const qEcology = topicById('ecology', STATIC_TOPICS).questions[0];
+    expect(qEcology.enemMetadata).toBeDefined();
+    expect(formatEnemTag(qEcology.enemMetadata)).toBe('ENEM 2024 · Caderno Azul · Q. 98 · H28');
   });
 
   test('mergeCatalogs overrides existing and appends new topics', () => {
@@ -36,14 +54,14 @@ describe('Catalog dynamics and merging', () => {
     };
 
     const merged = mergeCatalogs(STATIC_TOPICS, [customNewTopic]);
-    expect(merged).toHaveLength(5);
+    expect(merged).toHaveLength(12);
     expect(merged.find(t => t.id === 'functions')).toBeDefined();
     expect(merged.find(t => t.id === 'functions')?.name).toBe('Funções Afins');
   });
 
   test('fetchPublishedCatalog falls back to current catalog when Supabase is null or disconnected', async () => {
     const result = await fetchPublishedCatalog(null);
-    expect(result.length).toBeGreaterThanOrEqual(4);
+    expect(result.length).toBeGreaterThanOrEqual(11);
     expect(topicById('proportions', result).name).toBe('Razões e proporções');
   });
 

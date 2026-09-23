@@ -1,5 +1,5 @@
 import { buildBattlePlan, buildRepairChallenge, calculateRetention, DAY, effectiveScore, emptyMasteries, intervention, isDue, prerequisitesMet, scheduleReview, selectNextMonster, updateMastery } from './engine';
-import { evaluateDiagnostic, nextDiagnosticQuestion } from '@/diagnostic/engine';
+import { evaluateDiagnostic, nextDiagnosticQuestion, DIAGNOSTIC_GATEWAY_IDS } from '@/diagnostic/engine';
 import { TOPICS, questionById } from '@/content/catalog';
 import { AttemptEvent, TopicId } from './types';
 const NOW = '2026-09-21T12:00:00.000Z';
@@ -95,7 +95,8 @@ describe('diagnóstico adaptativo', () => {
     for (const profile of [() => true, () => false, (n: number) => n % 2 === 0]) {
       const a = simulate(profile); expect(a.length).toBeGreaterThanOrEqual(12); expect(a.length).toBeLessThanOrEqual(20);
       expect(new Set(a.map(a => a.questionId)).size).toBe(a.length);
-      for (const m of Object.values(evaluateDiagnostic(a))) expect(m.evidence).toBeGreaterThanOrEqual(3);
+      const evalMap = evaluateDiagnostic(a);
+      for (const id of DIAGNOSTIC_GATEWAY_IDS) expect(evalMap[id].evidence).toBeGreaterThanOrEqual(3);
     }
     expect(evaluateDiagnostic(simulate(() => true)).proportions.score).toBe(1);
     expect(evaluateDiagnostic(simulate(() => false)).proportions.score).toBe(0);
@@ -113,5 +114,5 @@ test('catálogo editorial íntegro e sem alternativas duplicadas', () => {
     expect(q.answer).toBeGreaterThanOrEqual(0); expect(q.answer).toBeLessThan(q.options.length);
     expect(new Set(q.options).size).toBe(q.options.length); expect(q.explanation.length).toBeGreaterThan(15);
   }
-  expect(ids.size).toBe(72);
+  expect(ids.size).toBe(198);
 });

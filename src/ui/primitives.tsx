@@ -21,6 +21,13 @@ const monsters: Record<string, any> = {
   'rule-of-three': require('../../assets/monsters/rule-of-three.png'),
   cytology: require('../../assets/monsters/cytology.png'),
   genetics: require('../../assets/monsters/genetics.png'),
+  kinematics: require('../../assets/monsters/rule-of-three.png'),
+  'newton-laws': require('../../assets/monsters/proportions.png'),
+  calorimetry: require('../../assets/monsters/rule-of-three.png'),
+  stoichiometry: require('../../assets/monsters/rule-of-three.png'),
+  solutions: require('../../assets/monsters/proportions.png'),
+  ecology: require('../../assets/monsters/cytology.png'),
+  'language-functions': require('../../assets/monsters/genetics.png'),
 };
 export function Monster({ id, size = 260, muted = false }: { id: TopicId; size?: number; muted?: boolean }) {
   const source = monsters[id] ?? monsters.proportions;

@@ -1,6 +1,8 @@
 import { TOPICS, TOPIC_IDS } from '@/content/catalog';
-import { AttemptEvent, Masteries, Question } from '@/learning/types';
+import { AttemptEvent, Masteries, Question, TopicId } from '@/learning/types';
 import { emptyMasteries } from '@/learning/engine';
+export const DIAGNOSTIC_GATEWAY_IDS: TopicId[] = ['proportions', 'rule-of-three', 'cytology', 'genetics'];
+
 export function evaluateDiagnostic(attempts: AttemptEvent[]): Masteries {
   const result = emptyMasteries();
   for (const id of TOPIC_IDS) {
@@ -11,9 +13,10 @@ export function evaluateDiagnostic(attempts: AttemptEvent[]): Masteries {
 }
 export function nextDiagnosticQuestion(attempts: AttemptEvent[]): Question | null {
   const state = evaluateDiagnostic(attempts);
-  const counts = TOPIC_IDS.map(id => state[id].evidence);
-  if (attempts.length >= 20 || (attempts.length >= 12 && counts.every(n => n >= 3) && TOPIC_IDS.every(id => state[id].score === 0 || state[id].score === 1 || state[id].evidence >= 5))) return null;
-  const order = [...TOPICS].sort((a, b) => {
+  const counts = DIAGNOSTIC_GATEWAY_IDS.map(id => state[id]?.evidence ?? 0);
+  if (attempts.length >= 20 || (attempts.length >= 12 && counts.every(n => n >= 3) && DIAGNOSTIC_GATEWAY_IDS.every(id => state[id].score === 0 || state[id].score === 1 || state[id].evidence >= 5))) return null;
+  const gatewayTopics = TOPICS.filter(t => DIAGNOSTIC_GATEWAY_IDS.includes(t.id));
+  const order = [...gatewayTopics].sort((a, b) => {
     const ac = state[a.id]?.evidence ?? 0; const bc = state[b.id]?.evidence ?? 0;
     if (ac < 3 || bc < 3) return ac - bc || a.prerequisiteIds.length - b.prerequisiteIds.length;
     const uncertainty = (score: number) => 1 - Math.abs(score - .5) * 2;

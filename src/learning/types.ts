@@ -1,4 +1,16 @@
-export type TopicId = 'proportions' | 'rule-of-three' | 'cytology' | 'genetics' | (string & {});
+export type TopicId =
+  | 'proportions'
+  | 'rule-of-three'
+  | 'cytology'
+  | 'genetics'
+  | 'kinematics'
+  | 'newton-laws'
+  | 'calorimetry'
+  | 'stoichiometry'
+  | 'solutions'
+  | 'ecology'
+  | 'language-functions'
+  | (string & {});
 export type Feeling = 'confident' | 'insecure' | 'anxious' | 'avoid';
 export type Barrier = 'difficulty' | 'tired' | 'relevance' | 'history';
 export interface StudentModel {
@@ -26,10 +38,20 @@ export interface RepairCheck {
   answer: number;
   insight: string;
 }
+export interface EnemMetadata {
+  exam: string;
+  year: number;
+  color?: string;
+  questionNumber?: number;
+  competency?: string;
+  ability?: string;
+  label?: string;
+}
 export interface Question {
   id: string; topicId: TopicId; difficulty: 1 | 2 | 3; purpose: 'diagnostic' | 'practice' | 'review';
   prompt: string; options: string[]; answer: number; explanation: string;
   repairCheck?: RepairCheck;
+  enemMetadata?: EnemMetadata;
 }
 export interface LessonBlock { id: string; kind: 'concept' | 'example' | 'recall' | 'summary' | 'pitfall' | 'tip' | 'review' | (string & {}); title: string; text: string; reveal?: string; formula?: string }
 export interface LearningContext {
@@ -46,7 +68,7 @@ export interface EnemGuidance {
   sources: string[];
 }
 export interface Topic {
-  id: TopicId; name: string; discipline: 'Matemática' | 'Biologia' | (string & {}); subtitle: string;
+  id: TopicId; name: string; discipline: 'Matemática' | 'Biologia' | 'Física' | 'Química' | 'Linguagens' | (string & {}); subtitle: string;
   description: string; relevance: string; prerequisiteIds: TopicId[]; priority: number;
   version: number; lessons: LessonBlock[]; questions: Question[];
   learningContext?: LearningContext;
