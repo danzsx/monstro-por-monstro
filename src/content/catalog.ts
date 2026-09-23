@@ -179,6 +179,43 @@ export const STATIC_TOPICS: Topic[] = [
       { id: 'am5', kind: 'pitfall', title: 'Um modelo tem alcance e limites', text: 'Não trate as representações como fotografias nem suponha que uma teoria antiga estava simplesmente “errada”: cada modelo respondeu a evidências e problemas de seu tempo. O modelo de Bohr é útil para níveis de energia, mas não descreve adequadamente átomos complexos.' },
       { id: 'am6', kind: 'recall', title: 'Ligue evidência e modelo', text: 'Que observação na lâmina de ouro levou Rutherford a propor um núcleo pequeno e denso? E o que a chama amarela do sódio evidencia?', reveal: 'O desvio acentuado de poucas partículas alfa indicava uma região central que concentrava carga positiva e massa. A chama amarela resulta de fótons emitidos quando elétrons excitados retornam a níveis de menor energia.' },
     ], questions: natureExpansionQuestions('atomic-models') },
+  { id: 'ecosystems', name: 'Bases da ecologia', discipline: 'Biologia', subtitle: 'A vida e o ambiente em relação.', description: 'Entenda como organismos, populações e condições do ambiente se organizam e influenciam uns aos outros.', relevance: 'O ENEM contextualiza ecologia em situações ambientais que pedem interpretar relações entre organismos, hábitats e conservação.', prerequisiteIds: [], priority: .9, version: 1,
+    learningContext: {
+      overview: 'Ecologia estuda as relações entre os seres vivos e o ambiente. Organismos formam populações; populações interagem em comunidades; comunidades e fatores abióticos, como água, luz e temperatura, compõem ecossistemas. Habitat indica onde uma espécie vive; nicho descreve seu modo de vida, recursos e relações.',
+      applications: [
+        'Restauração de matas ciliares considera solo, água, espécies nativas e conexões entre áreas de habitat.',
+        'Agricultura e controle biológico dependem de compreender interações entre pragas, predadores, polinizadores e condições ambientais.',
+        'Monitoramento de rios combina indicadores físicos, como temperatura e oxigênio dissolvido, com a presença de organismos.',
+      ],
+      limitations: 'Um ecossistema real reúne muitas relações simultâneas. Diagramas e exemplos didáticos isolam alguns fatores para facilitar a análise; conclusões sobre uma espécie ou local precisam considerar as condições específicas do ambiente.',
+    },
+    enemGuidance: {
+      status: 'reviewed',
+      priorities: [
+        'Distinguir habitat (onde vive) de nicho (como vive e com quais recursos e relações).',
+        'Classificar fatores bióticos e abióticos e prever como uma mudança em um deles afeta os organismos.',
+        'Relacionar perda ou recuperação de hábitats à biodiversidade e às medidas de conservação.',
+      ],
+      commonPatterns: [
+        'Na questão analisada do ENEM PPL 2023, um problema ambiental é apresentado e o estudante escolhe uma medida de conservação coerente com seus efeitos sobre a biodiversidade.',
+        'O raciocínio parte de uma situação concreta e exige interpretar relações ecológicas e consequências ambientais, não apenas repetir definições.',
+      ],
+      lowerIncidence: [
+        'No item consultado, não foi preciso memorizar classificações taxonômicas nem calcular crescimento populacional.',
+      ],
+      examsAnalyzed: 'ENEM PPL 2023 — Ciências da Natureza, questão 97 da reaplicação (caderno rosa).',
+      sources: [
+        'INEP, ENEM PPL 2023, 2º dia, caderno 8 (rosa), questão 97 — perda de biodiversidade e plantio de espécies nativas. https://download.inep.gov.br/enem/provas_e_gabaritos/2023_PV_reaplicacao_PPL_D2_CD8_superampliada.pdf',
+        'Matriz de Referência do ENEM, Ciências da Natureza — ecossistemas, fatores bióticos e abióticos, habitat e nicho. https://download.inep.gov.br/download/enem/matriz_referencia.pdf',
+      ],
+    },
+    lessons: [
+      { id: 'bas1', kind: 'concept', title: 'Do organismo ao ecossistema', text: 'Indivíduos da mesma espécie formam populações. Populações de espécies diferentes formam comunidades; a comunidade em interação com os fatores abióticos compõe um ecossistema.' },
+      { id: 'bas2', kind: 'example', title: 'O ambiente também faz parte', text: 'Num lago, algas, peixes e microrganismos interagem com água, luz, temperatura e sais minerais. Alterar a transparência ou a temperatura da água pode mudar as condições de vida dos organismos.' },
+      { id: 'bas3', kind: 'concept', title: 'Habitat é o lugar; nicho é o modo de vida', text: 'Habitat indica onde a espécie vive. Nicho envolve como utiliza recursos, quando está ativa e como interage com outras espécies e com o ambiente.' },
+      { id: 'bas4', kind: 'example', title: 'Interprete antes de escolher a medida', text: 'Em questões ambientais, identifique primeiro o que foi alterado — uma espécie, o habitat ou uma condição física — e depois acompanhe os efeitos sobre as relações e a biodiversidade.' },
+      { id: 'bas5', kind: 'recall', title: 'Aplique ao caso', text: 'Após a retirada da mata ciliar, a água fica mais quente e turva. Cite um fator abiótico alterado e uma possível consequência para os organismos.', reveal: 'A temperatura e a turbidez da água são fatores abióticos alterados. Isso pode reduzir organismos sensíveis ou mudar alimento, abrigo e relações na comunidade.' },
+    ], questions: natureExpansionQuestions('ecosystems') },
   { id: 'human-physiology', name: 'Corpo humano e saúde', discipline: 'Biologia', subtitle: 'Sistemas que trabalham em conjunto.', description: 'Relacione digestão, respiração, circulação, excreção, coordenação e imunidade à manutenção do organismo.', relevance: 'A integração entre sistemas do corpo ajuda a interpretar situações de saúde, prevenção e equilíbrio interno no ENEM.', prerequisiteIds: ['cytology'], priority: .89, version: 1,
     lessons: [
       { id: 'hp1', kind: 'concept', title: 'O organismo funciona em rede', text: 'Sistemas do corpo trocam matéria e sinais. Digestão disponibiliza nutrientes, respiração realiza trocas gasosas e circulação distribui substâncias entre tecidos.' },

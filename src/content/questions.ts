@@ -229,7 +229,18 @@ const ecologyEntries: Entry[] = [
 
 export const ecologyQuestions = () => ecologyEntries.map((e, i) => question('ecology', i, e));
 
-const natureExpansionEntries: Record<'human-health' | 'evolution' | 'electricity' | 'acid-base' | 'electrochemistry' | 'atomic-models', Entry[]> = {
+const natureExpansionEntries: Record<'human-health' | 'evolution' | 'electricity' | 'acid-base' | 'electrochemistry' | 'atomic-models' | 'ecosystems', Entry[]> = {
+  ecosystems: [
+    ['Um lago contém peixes, algas, bactérias, água, sais minerais e luz. O conjunto dos organismos e das condições físicas que interagem forma:', ['Uma população', 'Uma comunidade', 'Um ecossistema', 'Um nicho'], 2, 'Ecossistema inclui a comunidade de seres vivos e os fatores abióticos em interação.'],
+    ['Qual alternativa apresenta apenas fatores abióticos de uma floresta?', ['Fungos, temperatura e aves', 'Luz, água e temperatura', 'Plantas, solo e insetos', 'Bactérias, umidade e algas'], 1, 'Fatores abióticos são componentes físicos e químicos do ambiente, como luz, água e temperatura.'],
+    ['A competição entre duas espécies por alimento é uma interação:', ['Abiótica', 'Biótica', 'Geológica', 'Climática'], 1, 'Interações entre organismos, como competição, são fatores bióticos.'],
+    ['O local onde uma espécie vive corresponde ao seu:', ['Nicho ecológico', 'Habitat', 'Nível trófico', 'Bioma'], 1, 'Habitat é o espaço onde a espécie vive; nicho descreve seu modo de vida e suas relações.'],
+    ['O papel de uma espécie, seus recursos alimentares e seus horários de atividade ajudam a descrever seu:', ['Habitat', 'Nicho ecológico', 'Ecótono', 'Clima'], 1, 'O nicho ecológico abrange as condições, recursos e interações associados ao modo de vida da espécie.'],
+    ['Um grupo de capivaras da mesma espécie que vive em uma várzea constitui:', ['Uma população', 'Uma comunidade', 'Um ecossistema', 'Uma biosfera'], 0, 'População reúne indivíduos da mesma espécie que ocupam uma área no mesmo período.'],
+    ['Peixes, plantas aquáticas e insetos de um mesmo lago, considerados em conjunto, formam:', ['Uma população', 'Uma comunidade', 'Um fator abiótico', 'Um nicho'], 1, 'Comunidade é o conjunto de populações de espécies diferentes que vivem e interagem numa área.'],
+    ['Após a retirada da mata ciliar, a água de um rio fica mais quente e turva. Essa situação mostra que:', ['Uma mudança abiótica pode afetar os organismos do ecossistema', 'Fatores bióticos nunca dependem do ambiente físico', 'Habitat e ecossistema são sinônimos', 'A temperatura é um fator biótico'], 0, 'Remover vegetação altera sombra, erosão e condições da água, afetando os organismos que vivem no rio.'],
+    ['Uma área degradada perdeu espécies nativas e abrigo para animais. Qual ação ajuda a recuperar as relações do ecossistema?', ['Plantar espécies nativas adequadas ao local', 'Introduzir espécies exóticas sem avaliar impactos', 'Eliminar todos os decompositores', 'Manter fragmentos isolados entre si'], 0, 'A restauração com espécies nativas pode recuperar habitat e recursos para organismos locais; a escolha depende das condições do ambiente.'],
+  ],
   'atomic-models': [
     ['No modelo de Dalton, o átomo era representado como:', ['Uma esfera maciça e indivisível', 'Um núcleo com elétrons em órbitas', 'Uma nuvem eletrônica', 'Uma esfera positiva com elétrons incrustados'], 0, 'Dalton propôs átomos como partículas maciças e indivisíveis, modelo conhecido como bola de bilhar.'],
     ['Os experimentos com raios catódicos levaram Thomson a propor:', ['A existência do elétron', 'A existência do nêutron', 'A órbita quantizada', 'A radioatividade natural'], 0, 'Os raios catódicos eram feixes de partículas negativas: os elétrons.'],

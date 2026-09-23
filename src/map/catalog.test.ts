@@ -43,13 +43,13 @@ describe('inventário e relações do mapa', () => {
 });
 
 describe('vínculos com monstros e progresso', () => {
-  test('vincula os quatorze monstros de Natureza sem fabricar entradas no catálogo', () => {
+  test('vincula os quinze monstros de Natureza sem fabricar entradas no catálogo', () => {
     const masteries = emptyMasteries();
     const before = JSON.stringify(masteries);
     const resolved = MAP_NODES.map(n => resolveNodeState(n, STATIC_TOPICS, masteries));
-    expect(resolved.filter(n => n.topic).map(n => n.topic!.id).sort()).toEqual(['atomic-models', 'calorimetry', 'cytology', 'ecology', 'electricity', 'electrochemistry', 'evolution', 'genetics', 'human-physiology', 'kinematics', 'newton-laws', 'ph-hydrolysis', 'solutions', 'stoichiometry']);
+    expect(resolved.filter(n => n.topic).map(n => n.topic!.id).sort()).toEqual(['atomic-models', 'calorimetry', 'cytology', 'ecology', 'ecosystems', 'electricity', 'electrochemistry', 'evolution', 'genetics', 'human-physiology', 'kinematics', 'newton-laws', 'ph-hydrolysis', 'solutions', 'stoichiometry']);
     expect(JSON.stringify(masteries)).toBe(before);
-    expect(STATIC_TOPICS).toHaveLength(17);
+    expect(STATIC_TOPICS).toHaveLength(18);
   });
   test('catálogo vazio, remoção e disciplina incompatível nunca produzem um link', () => {
     const node = NODES_BY_ID.genetics;

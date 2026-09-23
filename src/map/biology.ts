@@ -31,7 +31,7 @@ export const BIOLOGY_NODES = [
     ['human-evolution', 'Evolução humana', 'Explore evidências e relações de parentesco da linhagem humana, compreendendo evolução como um processo ramificado.', [5]],
   ]),
   ...units('bio-ecology', [
-    ['ecosystems', 'Bases da ecologia', 'Identifique fatores bióticos e abióticos e diferencie habitat e nicho para compreender como um ecossistema funciona.', [0]],
+    ['ecosystems', 'Bases da ecologia', 'Identifique fatores bióticos e abióticos e diferencie habitat e nicho para compreender como um ecossistema funciona.', [0], 'ecosystems'],
     ['ecology', 'Cadeias e ciclos', 'Conecte cadeias e teias alimentares ao fluxo de energia e à circulação dos elementos nos ciclos biogeoquímicos.', [1, 4], 'ecology'],
     ['succession', 'Sucessão ecológica', 'Acompanhe mudanças nas comunidades ao longo do tempo e discuta o conceito de clímax e os efeitos de perturbações.', [2]],
     ['populations', 'Populações e relações', 'Analise crescimento populacional, fatores limitantes e interações como competição, predação e mutualismo.', [3]],

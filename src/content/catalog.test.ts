@@ -2,8 +2,8 @@ import { STATIC_TOPICS, mergeCatalogs, fetchPublishedCatalog, topicById, formatE
 import { Topic } from '@/learning/types';
 
 describe('Catalog dynamics and merging', () => {
-  test('STATIC_TOPICS contains 17 base topics across all core ENEM disciplines', () => {
-    expect(STATIC_TOPICS).toHaveLength(17);
+  test('STATIC_TOPICS contains 18 base topics across all core ENEM disciplines', () => {
+    expect(STATIC_TOPICS).toHaveLength(18);
     expect(STATIC_TOPICS.map(t => t.id)).toEqual([
       'proportions',
       'rule-of-three',
@@ -15,6 +15,7 @@ describe('Catalog dynamics and merging', () => {
       'stoichiometry',
       'solutions',
       'atomic-models',
+      'ecosystems',
       'human-physiology',
       'evolution',
       'electricity',
@@ -26,13 +27,22 @@ describe('Catalog dynamics and merging', () => {
   });
 
   test('new nature topics include lessons and diagnostic, practice, and review questions', () => {
-    for (const id of ['human-physiology', 'evolution', 'electricity', 'ph-hydrolysis', 'electrochemistry', 'atomic-models'] as const) {
+    for (const id of ['human-physiology', 'evolution', 'electricity', 'ph-hydrolysis', 'electrochemistry', 'atomic-models', 'ecosystems'] as const) {
       const topic = topicById(id, STATIC_TOPICS);
       expect(topic.lessons.length).toBeGreaterThanOrEqual(4);
       expect(topic.questions).toHaveLength(id === 'atomic-models' ? 12 : 9);
       expect(new Set(topic.questions.map(question => question.purpose))).toEqual(new Set(['diagnostic', 'practice', 'review']));
       expect(topic.questions.every(question => question.topicId === id)).toBe(true);
     }
+  });
+
+  test('ecology basics include a bounded ENEM curation and an official exam source', () => {
+    const topic = topicById('ecosystems', STATIC_TOPICS);
+    expect(topic.learningContext?.overview).toContain('fatores abióticos');
+    expect(topic.enemGuidance?.status).toBe('reviewed');
+    expect(topic.enemGuidance?.examsAnalyzed).toContain('ENEM PPL 2023');
+    expect(topic.enemGuidance?.sources[0]).toContain('download.inep.gov.br');
+    expect(topic.questions).toHaveLength(9);
   });
 
   test('atomic models include curated ENEM guidance grounded in past items', () => {
@@ -80,7 +90,7 @@ describe('Catalog dynamics and merging', () => {
     };
 
     const merged = mergeCatalogs(STATIC_TOPICS, [customNewTopic]);
-    expect(merged).toHaveLength(18);
+    expect(merged).toHaveLength(19);
     expect(merged.find(t => t.id === 'functions')).toBeDefined();
     expect(merged.find(t => t.id === 'functions')?.name).toBe('Funções Afins');
   });
