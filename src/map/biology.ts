@@ -1,0 +1,55 @@
+import { units } from './types';
+
+export const BIOLOGY_NODES = [
+  ...units('bio-cell', [
+    ['water-minerals', 'Água e sais minerais', 'Entenda o papel da água como solvente e dos íons no funcionamento dos seres vivos. Essa base ajuda a explicar transporte e equilíbrio celular.', [2]],
+    ['biomolecules', 'Moléculas da vida', 'Compare carboidratos, lipídios, proteínas e ácidos nucleicos. Suas estruturas ajudam a entender a organização das células.', [2], undefined, ['bioquímica']],
+    ['cytology', 'Citologia', 'Conheça a organização de membrana, citoplasma, núcleo e organelas, relacionando cada estrutura ao funcionamento da célula.', [0], 'cytology', ['célula', 'organelas']],
+    ['membrane-transport', 'Membrana e transportes', 'Explore permeabilidade seletiva, difusão, osmose e transporte ativo. Relacione água, solutos e trocas através da membrana.', [0], undefined, ['osmose']],
+    ['cell-division', 'Divisão celular', 'Compare mitose e meiose e acompanhe a distribuição dos cromossomos na formação de novas células e gametas.', [1], undefined, ['mitose', 'meiose']],
+    ['cell-metabolism', 'Metabolismo celular', 'Compreenda como enzimas regulam transformações químicas e como ATP participa das transferências de energia.', [3]],
+    ['photosynthesis', 'Fotossíntese e respiração', 'Siga as transformações de matéria e energia que sustentam a produção de matéria orgânica e seu aproveitamento pelas células.', [3]],
+    ['dna-proteins', 'DNA e síntese proteica', 'Relacione DNA, RNA, código genético e produção de proteínas para compreender como a informação genética é utilizada.', [4], undefined, ['biologia molecular', 'transcrição', 'tradução']],
+    ['tissues', 'Tecidos e diferenciação', 'Veja como células especializadas formam tecidos animais e vegetais e como estrutura e função se relacionam.', [5], undefined, ['histologia']],
+    ['cell-origin', 'Origem das células', 'Explore hipóteses sobre o surgimento e a evolução das células, incluindo a origem de organelas por endossimbiose.', [6]],
+    ['biotechnology', 'Biotecnologia', 'Explore células-tronco, clonagem, DNA recombinante e usos do DNA em identificação, alimentos e medicamentos, incluindo dilemas éticos e sustentabilidade.', [7, 8, 9]],
+  ]),
+  ...units('bio-inheritance', [
+    ['genetics', 'Fundamentos de genética', 'Entenda genes, alelos, genótipo, fenótipo e transmissão de características. Compare o modelo mendeliano com explicações anteriores.', [0], 'genetics', ['Mendel', 'hereditariedade']],
+    ['immunity', 'Imunidade e grupos sanguíneos', 'Relacione antígenos e anticorpos a grupos sanguíneos, transplantes e autoimunidade, distinguindo mecanismos genéticos e imunológicos.', [1], undefined, ['ABO', 'Rh']],
+    ['cancer', 'Câncer e ambiente', 'Relacione alterações na regulação celular ao desenvolvimento de neoplasias e à influência de fatores ambientais.', [2], undefined, ['neoplasia']],
+    ['mutations', 'Mutações e aconselhamento', 'Compare alterações em genes e cromossomos e compreenda como informações hereditárias apoiam o aconselhamento genético.', [3]],
+    ['population-genetics', 'Diversidade genética', 'Relacione variabilidade, herança e mudanças em populações para entender as bases genéticas da evolução e da biodiversidade.', [4]],
+  ]),
+  ...units('bio-organisms', [
+    ['living-beings', 'Organização da vida', 'Compare níveis de organização, tipos celulares, número de células e formas de nutrição, incluindo as particularidades dos vírus.', [0]],
+    ['taxonomy', 'Classificação dos seres vivos', 'Leia relações evolutivas entre grandes grupos e entenda como características e dados moleculares ajudam a construir classificações.', [1], undefined, ['sistemática', 'filogenia']],
+    ['life-cycles', 'Reprodução e ciclos de vida', 'Compare reprodução e alternância de fases em ciclos de vida, relacionando fecundação, divisão celular e número de cromossomos.', [2]],
+    ['comparative-biology', 'Diversidade e adaptações', 'Compare estruturas e funções vitais em diferentes seres vivos, incluindo plantas e animais, e suas relações com o ambiente e a evolução.', [3], undefined, ['botânica', 'zoologia']],
+    ['embryology', 'Embriologia', 'Acompanhe as etapas iniciais do desenvolvimento e relacione divisão, diferenciação celular e formação do organismo.', [4]],
+    ['human-physiology', 'Corpo humano', 'Integre anatomia e fisiologia: nutrição, respiração, circulação, excreção, coordenação, movimento e reprodução na manutenção do organismo.', [4], undefined, ['anatomia', 'fisiologia humana']],
+    ['human-evolution', 'Evolução humana', 'Explore evidências e relações de parentesco da linhagem humana, compreendendo evolução como um processo ramificado.', [5]],
+  ]),
+  ...units('bio-ecology', [
+    ['ecosystems', 'Bases da ecologia', 'Identifique fatores bióticos e abióticos e diferencie habitat e nicho para compreender como um ecossistema funciona.', [0]],
+    ['ecology', 'Cadeias e ciclos', 'Conecte cadeias e teias alimentares ao fluxo de energia e à circulação dos elementos nos ciclos biogeoquímicos.', [1, 4], 'ecology'],
+    ['succession', 'Sucessão ecológica', 'Acompanhe mudanças nas comunidades ao longo do tempo e discuta o conceito de clímax e os efeitos de perturbações.', [2]],
+    ['populations', 'Populações e relações', 'Analise crescimento populacional, fatores limitantes e interações como competição, predação e mutualismo.', [3]],
+    ['biomes', 'Biomas e biogeografia', 'Relacione clima, distribuição dos seres vivos e características dos biomas brasileiros.', [5]],
+    ['environmental-impacts', 'Impactos ambientais', 'Investigue uso de recursos, desmatamento, erosão, poluição e mudanças climáticas, articulando causas e efeitos nos ecossistemas.', [6]],
+    ['conservation', 'Conservação e saneamento', 'Compare conservação, recuperação de ecossistemas, proteção da biodiversidade, saneamento e tecnologias ambientais.', [7]],
+    ['environmental-law', 'Ambiente e cidadania', 'Compreenda o papel das normas sobre água, florestas, unidades de conservação e biodiversidade na proteção ambiental.', [8]],
+  ]),
+  ...units('bio-evolution', [
+    ['biology-methods', 'Investigar a vida', 'Entenda como observações, hipóteses, experimentos e técnicas construíram o conhecimento biológico ao longo da história.', [0]],
+    ['origin-life', 'Origem da vida', 'Compare hipóteses sobre a origem do Universo, da Terra e da vida e os tipos de evidência usados para investigá-las.', [1]],
+    ['evolution', 'Teorias da evolução', 'Compare explicações anteriores a Darwin, seleção natural e teoria sintética, relacionando evidências a mudanças nas populações.', [2], undefined, ['darwinismo', 'neodarwinismo', 'Lamarck']],
+    ['artificial-selection', 'Seleção artificial', 'Analise como escolhas humanas alteram populações e como essas mudanças afetam ambientes, agricultura e sociedade.', [3]],
+  ]),
+  ...units('bio-health', [
+    ['health-indicators', 'Saúde e desenvolvimento', 'Interprete indicadores sociais, ambientais e econômicos, incluindo o IDH, e suas relações com pobreza e condições de vida.', [0]],
+    ['disease-prevention', 'Doenças e prevenção', 'Estude transmissão, prevenção e profilaxia de doenças relevantes no Brasil, infecções sexualmente transmissíveis e noções de primeiros socorros.', [1], undefined, ['parasitologia', 'IST', 'DST']],
+    ['social-health', 'Saúde e escolhas coletivas', 'Relacione drogas, gravidez na adolescência, obesidade, violência e segurança pública às condições sociais e biológicas de saúde.', [2]],
+    ['healthy-life', 'Vida saudável e cidadania', 'Conecte atividade física e cuidado com a saúde ao desenvolvimento sustentável, aos direitos e às responsabilidades coletivas.', [3]],
+  ]),
+];

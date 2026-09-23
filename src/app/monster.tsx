@@ -36,7 +36,11 @@ function EnemCard({ guidance }: { guidance?: EnemGuidance }) {
 }
 
 export default function MonsterKnowledgeScreen() {
-  const { topicId } = useLocalSearchParams<{ topicId: string }>();
+  const { topicId, from, mapNode } = useLocalSearchParams<{ topicId: string; from?: string; mapNode?: string }>();
+  const returnToContents = () => {
+    if (from === 'map') router.dismissTo({ pathname: '/map', params: { node: mapNode } });
+    else router.replace('/bestiary');
+  };
   const { topicById, state } = useApp();
   const { width } = useWindowDimensions();
   const topic = useMemo(() => {
@@ -45,12 +49,12 @@ export default function MonsterKnowledgeScreen() {
   const mastery = topic ? state.masteries[topic.id] : undefined;
   const retention = mastery ? calculateRetention(mastery, new Date().toISOString()) : 0;
 
-  if (!topic) return <Page narrow><Button title="Voltar ao meu bestiário" variant="secondary" onPress={() => router.replace('/bestiary')} /><Card><Heading>Não encontramos esse monstro.</Heading><Txt color={c.muted}>Ele pode ter sido removido do catálogo.</Txt></Card></Page>;
+  if (!topic) return <Page narrow><Button title={from === 'map' ? 'Voltar ao mapa' : 'Voltar ao meu bestiário'} variant="secondary" onPress={returnToContents} /><Card><Heading>Não encontramos esse monstro.</Heading><Txt color={c.muted}>Ele pode ter sido removido do catálogo.</Txt></Card></Page>;
 
   const context = topic.learningContext;
   const horizontal = width >= 760;
   return <Page narrow>
-    <Button title="Meu bestiário" variant="ghost" icon={<ArrowLeft size={17} color={c.purple} />} onPress={() => router.replace('/bestiary')} />
+    <Button title={from === 'map' ? 'Voltar ao mapa' : 'Meu bestiário'} variant="ghost" icon={<ArrowLeft size={17} color={c.purple} />} onPress={returnToContents} />
     <View style={{ backgroundColor: topic.discipline === 'Biologia' ? c.peach : c.lavender, borderRadius: 26, padding: horizontal ? 30 : 18, flexDirection: horizontal ? 'row' : 'column', alignItems: 'center', gap: 17, overflow: 'hidden' }}>
       <View style={{ flex: 1, gap: 12 }}><Eyebrow>{topic.discipline.toUpperCase()} · CONHEÇA SEU MONSTRO</Eyebrow><Heading size={horizontal ? 39 : 32}>{topic.name}</Heading>{topic.subtitle ? <Txt size={17} color={c.muted}>{topic.subtitle}</Txt> : null}<Txt style={{ lineHeight: 25 }}>{topic.description}</Txt></View>
       <View style={{ alignItems: 'center' }}><Monster id={topic.id} size={horizontal ? 210 : 180} /><Pill>{topic.discipline.toUpperCase()}</Pill></View>

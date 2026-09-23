@@ -7,6 +7,7 @@ import {
   chemistryQuestions,
   ecologyQuestions,
   languageQuestions,
+  natureExpansionQuestions,
 } from './questions';
 
 export function formatEnemTag(meta?: EnemMetadata): string {
@@ -138,6 +139,41 @@ export const STATIC_TOPICS: Topic[] = [
       { id: 'sol3', kind: 'concept', title: 'Molaridade: medindo em mols', text: 'A concentração molar (mol/L) indica quantos mols de soluto existem em 1 litro de solução. É a unidade padrão da química universitária e do ENEM.' },
       { id: 'sol4', kind: 'recall', title: 'Diluição rápida', text: 'Se você tem 100 mL de suco com concentração 40 g/L e adiciona água até 200 mL, qual é a nova concentração?', reveal: 'O volume dobrou (de 100 para 200 mL); logo, a concentração cai pela metade: 20 g/L!' },
     ], questions: chemistryQuestions('solutions') },
+  { id: 'human-physiology', name: 'Corpo humano e saúde', discipline: 'Biologia', subtitle: 'Sistemas que trabalham em conjunto.', description: 'Relacione digestão, respiração, circulação, excreção, coordenação e imunidade à manutenção do organismo.', relevance: 'A integração entre sistemas do corpo ajuda a interpretar situações de saúde, prevenção e equilíbrio interno no ENEM.', prerequisiteIds: ['cytology'], priority: .89, version: 1,
+    lessons: [
+      { id: 'hp1', kind: 'concept', title: 'O organismo funciona em rede', text: 'Sistemas do corpo trocam matéria e sinais. Digestão disponibiliza nutrientes, respiração realiza trocas gasosas e circulação distribui substâncias entre tecidos.' },
+      { id: 'hp2', kind: 'example', title: 'Oxigênio chega às células', text: 'Nos alvéolos, O2 difunde-se para o sangue e liga-se à hemoglobina. A circulação o leva aos tecidos, onde participa da respiração celular.' },
+      { id: 'hp3', kind: 'concept', title: 'Homeostase depende de regulação', text: 'Rins ajustam água e sais; hormônios regulam processos como a glicemia; sistemas nervoso e endócrino coordenam respostas do organismo.' },
+      { id: 'hp4', kind: 'recall', title: 'Conecte os sistemas', text: 'Durante uma corrida, por que aumentam a frequência respiratória e os batimentos cardíacos?', reveal: 'Os músculos consomem mais oxigênio e produzem mais CO2. Respiração e circulação ajustam as trocas e o transporte.' },
+    ], questions: natureExpansionQuestions('human-health', 'human-physiology') },
+  { id: 'evolution', name: 'Evolução e biodiversidade', discipline: 'Biologia', subtitle: 'A diversidade muda ao longo das gerações.', description: 'Interprete seleção natural, variação hereditária, evidências evolutivas e relações de parentesco.', relevance: 'Evolução conecta genética, biodiversidade, saúde e adaptação a problemas ambientais e sociais.', prerequisiteIds: ['genetics'], priority: .9, version: 1,
+    lessons: [
+      { id: 'ev1', kind: 'concept', title: 'Populações mudam ao longo do tempo', text: 'Evolução é a mudança de características hereditárias em populações ao longo das gerações. Indivíduos não evoluem por necessidade ou intenção.' },
+      { id: 'ev2', kind: 'example', title: 'A resistência é selecionada', text: 'Se há variantes bacterianas resistentes, o antibiótico pode eliminar as suscetíveis. As resistentes deixam mais descendentes, aumentando sua frequência.' },
+      { id: 'ev3', kind: 'concept', title: 'Várias evidências contam a história', text: 'Fósseis, anatomia comparada, embriologia e dados moleculares ajudam a investigar ancestralidade e parentesco entre espécies.' },
+      { id: 'ev4', kind: 'recall', title: 'Seleção não é intenção', text: 'O antibiótico faz cada bactéria desenvolver resistência porque precisa sobreviver?', reveal: 'Não. Variações surgem sem objetivo; em certas condições, indivíduos resistentes sobrevivem e se reproduzem mais.' },
+    ], questions: natureExpansionQuestions('evolution') },
+  { id: 'electricity', name: 'Eletricidade e consumo', discipline: 'Física', subtitle: 'Energia elétrica em casa e na cidade.', description: 'Use tensão, corrente, resistência, potência e tempo para entender circuitos e consumo de energia.', relevance: 'Contas de luz, segurança elétrica e funcionamento de aparelhos são contextos recorrentes de Física no ENEM.', prerequisiteIds: ['proportions'], priority: .9, version: 1,
+    lessons: [
+      { id: 'el1', kind: 'concept', title: 'Tensão impulsiona cargas', text: 'Corrente elétrica descreve o fluxo de cargas. A tensão representa a diferença de potencial que pode impulsionar esse fluxo em um circuito.' },
+      { id: 'el2', kind: 'example', title: 'Potência e energia consumida', text: 'Potência indica a rapidez de transformação de energia. Para estimar consumo, multiplique a potência pelo tempo de funcionamento.', formula: 'P = U × I   |   E = P × t' },
+      { id: 'el3', kind: 'concept', title: 'Resistência e segurança', text: 'A lei de Ohm relaciona tensão, corrente e resistência. Fusíveis e disjuntores interrompem correntes excessivas para proteger a instalação.' },
+      { id: 'el4', kind: 'recall', title: 'Leia a conta de energia', text: 'Uma lâmpada de 100 W fica acesa por 10 horas. Qual energia consome em kWh?', reveal: '100 W = 0,1 kW; 0,1 kW × 10 h = 1 kWh.' },
+    ], questions: natureExpansionQuestions('electricity') },
+  { id: 'ph-hydrolysis', name: 'Ácidos, bases e equilíbrio', discipline: 'Química', subtitle: 'O que o pH revela sobre uma solução.', description: 'Interprete pH, indicadores, neutralização e equilíbrios ácido-base em contextos do cotidiano e do ambiente.', relevance: 'Acidez de solos e águas, produtos domésticos e equilíbrio químico conectam conceitos a problemas contextualizados no ENEM.', prerequisiteIds: ['solutions'], priority: .88, version: 1,
+    lessons: [
+      { id: 'ab1', kind: 'concept', title: 'pH indica acidez', text: 'Em soluções aquosas diluídas, pH menor indica maior acidez. Indicadores mudam de cor em faixas de pH e ajudam a comparar soluções.' },
+      { id: 'ab2', kind: 'example', title: 'Neutralização forma produtos', text: 'Em uma neutralização, espécies ácidas e básicas reagem. Frequentemente formam água e um sal, como na reação entre HCl e NaOH.' },
+      { id: 'ab3', kind: 'concept', title: 'Equilíbrio continua dinâmico', text: 'No equilíbrio químico, as reações direta e inversa continuam ocorrendo à mesma velocidade. Alterar concentrações pode deslocar a composição do sistema.' },
+      { id: 'ab4', kind: 'recall', title: 'Compare sem decorar', text: 'Uma solução de pH 3 é mais ou menos ácida que outra de pH 5?', reveal: 'É mais ácida: menor pH corresponde a maior acidez.' },
+    ], questions: natureExpansionQuestions('acid-base', 'ph-hydrolysis') },
+  { id: 'electrochemistry', name: 'Pilhas e eletrólise', discipline: 'Química', subtitle: 'Reações químicas que movem cargas.', description: 'Acompanhe oxidação e redução em pilhas, eletrólise, corrosão e proteção de metais.', relevance: 'Baterias, corrosão e obtenção de metais aproximam eletroquímica de tecnologias e impactos ambientais.', prerequisiteIds: ['stoichiometry', 'solutions'], priority: .87, version: 1,
+    lessons: [
+      { id: 'ec1', kind: 'concept', title: 'Oxidação e redução andam juntas', text: 'Oxidação é perda de elétrons; redução é ganho. Em uma reação de oxirredução, uma espécie doa elétrons e outra os recebe.' },
+      { id: 'ec2', kind: 'example', title: 'Uma pilha produz corrente', text: 'Em uma pilha, uma reação espontânea separa os processos de oxidação e redução. Os elétrons percorrem o circuito externo e fornecem energia elétrica.' },
+      { id: 'ec3', kind: 'concept', title: 'Eletrólise usa energia elétrica', text: 'Uma fonte externa força uma reação não espontânea. A eletrólise pode ser usada para obter ou purificar substâncias e revestir objetos.' },
+      { id: 'ec4', kind: 'recall', title: 'Proteja o ferro', text: 'Por que uma camada de zinco pode proteger uma peça de ferro contra corrosão?', reveal: 'O zinco pode oxidar-se preferencialmente e atuar como metal de sacrifício, protegendo o ferro.' },
+    ], questions: natureExpansionQuestions('electrochemistry') },
   { id: 'ecology', name: 'Cadeias e ciclos biogeoquímicos', discipline: 'Biologia', subtitle: 'O campeão absoluto de incidência do ENEM.', description: 'Acompanhe o fluxo unidirecional de energia e a reciclagem dos elementos químicos na biosfera.', relevance: 'Ecologia representa historicamente mais de 30% da prova de Biologia do ENEM.', prerequisiteIds: [], priority: .98, version: 1,
     learningContext: {
       overview: 'Ecologia investiga as relações entre os seres vivos e o ambiente. No ENEM, o foco está em como as atividades humanas desequilibram teias tróficas e ciclos vitais como carbono e nitrogênio.',

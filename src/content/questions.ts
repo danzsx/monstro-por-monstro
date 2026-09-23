@@ -229,6 +229,71 @@ const ecologyEntries: Entry[] = [
 
 export const ecologyQuestions = () => ecologyEntries.map((e, i) => question('ecology', i, e));
 
+const natureExpansionEntries: Record<'human-health' | 'evolution' | 'electricity' | 'acid-base' | 'electrochemistry', Entry[]> = {
+  'human-health': [
+    ['Qual sistema transporta oxigênio e nutrientes pelo corpo?', ['Digestório', 'Circulatório', 'Excretor', 'Endócrino'], 1, 'O sistema circulatório distribui gases, nutrientes, hormônios e resíduos pelo organismo.'],
+    ['A troca de gases entre o ar e o sangue ocorre principalmente:', ['Nos alvéolos pulmonares', 'No estômago', 'Nos rins', 'No intestino grosso'], 0, 'A grande superfície dos alvéolos permite difusão de O2 para o sangue e de CO2 para o ar.'],
+    ['A insulina contribui para:', ['Aumentar a glicose no sangue', 'Reduzir a glicose no sangue ao favorecer sua entrada nas células', 'Produzir hemácias', 'Filtrar a urina'], 1, 'A insulina é um hormônio pancreático que favorece a captação de glicose e ajuda a regular a glicemia.'],
+    ['A principal função das vilosidades do intestino delgado é:', ['Produzir bile', 'Ampliar a absorção de nutrientes', 'Filtrar o sangue', 'Realizar trocas gasosas'], 1, 'Vilosidades e microvilosidades ampliam a superfície de absorção intestinal.'],
+    ['Os rins ajudam a manter a homeostase porque:', ['Produzem oxigênio', 'Regulam água e sais e eliminam resíduos na urina', 'Realizam digestão', 'Bombeiam sangue'], 1, 'A filtração renal remove resíduos e participa do equilíbrio de água, íons e pH.'],
+    ['Vacinas estimulam principalmente:', ['Memória imunológica', 'Digestão de proteínas', 'Produção de bile', 'Coagulação'], 0, 'A vacinação prepara o sistema imune para responder com maior rapidez a um agente específico.'],
+    ['Uma pessoa com baixa produção de hemoglobina pode apresentar menor transporte de:', ['Glicose', 'Oxigênio', 'Ureia', 'Bile'], 1, 'A hemoglobina nas hemácias liga-se ao oxigênio e permite seu transporte pelo sangue.'],
+    ['O sistema nervoso coordena respostas rápidas por meio de:', ['Impulsos elétricos e neurotransmissores', 'Enzimas digestivas', 'Anticorpos circulantes', 'Filtração glomerular'], 0, 'Neurônios conduzem sinais elétricos e comunicam-se por neurotransmissores nas sinapses.'],
+    ['Em uma situação de exercício, a frequência respiratória aumenta para:', ['Diminuir a entrada de oxigênio', 'Atender à maior demanda de oxigênio e eliminar mais CO2', 'Interromper a circulação', 'Impedir a produção de ATP'], 1, 'A atividade muscular eleva o consumo de oxigênio e a produção de dióxido de carbono.'],
+  ],
+  evolution: [
+    ['Na seleção natural, indivíduos com características hereditárias vantajosas tendem a:', ['Deixar mais descendentes em certo ambiente', 'Mudar intencionalmente seus genes', 'Parar de competir', 'Transmitir características adquiridas pelo esforço'], 0, 'A seleção altera frequências de características herdáveis ao longo de gerações conforme o sucesso reprodutivo.'],
+    ['Fósseis são evidências importantes porque:', ['Registram organismos e mudanças ao longo do tempo geológico', 'Mostram que todas as espécies surgiram juntas', 'Revelam apenas espécies atuais', 'Provam que ambientes nunca mudaram'], 0, 'O registro fóssil permite investigar organismos do passado e transformações da biodiversidade.'],
+    ['Estruturas homólogas indicam:', ['Uma origem evolutiva compartilhada, mesmo com funções diferentes', 'Sempre a mesma função', 'Ausência de parentesco', 'Adaptação idêntica ao mesmo ambiente'], 0, 'Homologia aponta semelhanças de origem e plano estrutural, ainda que a função tenha divergido.'],
+    ['A resistência bacteriana a antibióticos aumenta quando:', ['Bactérias resistentes sobrevivem e se reproduzem sob pressão do antibiótico', 'Cada bactéria decide adaptar-se', 'O antibiótico cria sempre a mutação necessária', 'O uso do remédio elimina a seleção'], 0, 'Variantes resistentes podem ser favorecidas pela seleção quando o antibiótico elimina as suscetíveis.'],
+    ['A deriva genética tende a ter maior efeito em:', ['Populações pequenas', 'Populações infinitas', 'Indivíduos isolados sem reprodução', 'Ambientes sem mutações'], 0, 'Em populações pequenas, eventos ao acaso podem alterar bastante as frequências dos alelos.'],
+    ['A especiação pode ocorrer quando populações ficam:', ['Isoladas e acumulam diferenças hereditárias', 'Completamente idênticas para sempre', 'Sem qualquer reprodução', 'Em contato com o mesmo alimento'], 0, 'Isolamento reprodutivo e divergência ao longo do tempo podem originar novas espécies.'],
+    ['Uma árvore filogenética representa hipóteses sobre:', ['Relações de parentesco evolutivo', 'Tamanho corporal exato', 'Ordem de importância dos seres vivos', 'Idade individual dos organismos'], 0, 'Ramos compartilham ancestrais comuns e representam hipóteses de parentesco.'],
+    ['Mutações são relevantes à evolução porque:', ['Podem gerar novas variantes hereditárias', 'Sempre beneficiam o organismo', 'Ocorrem apenas por necessidade', 'Eliminam a reprodução sexuada'], 0, 'Mutações introduzem variação genética; seus efeitos podem ser neutros, prejudiciais ou vantajosos.'],
+    ['A seleção artificial difere da natural porque:', ['A escolha de quais organismos se reproduzem é feita por humanos', 'Não envolve hereditariedade', 'Ocorre sem variação', 'Sempre aumenta a diversidade'], 0, 'Na seleção artificial, pessoas favorecem características ao escolher reprodutores.'],
+  ],
+  electricity: [
+    ['Um aparelho ligado a 120 V conduz corrente de 2 A. Sua potência é:', ['60 W', '122 W', '240 W', '2400 W'], 2, 'P = U × I = 120 × 2 = 240 W.'],
+    ['O consumo de energia elétrica depende da potência e do:', ['Tempo de uso', 'Formato do plugue', 'Número de tomadas da casa', 'Material da parede'], 0, 'A energia consumida é potência multiplicada pelo tempo: E = P × t.'],
+    ['Em uma instalação doméstica, aparelhos em paralelo recebem, em geral:', ['A mesma tensão da rede', 'Sempre a mesma corrente', 'Tensão zero', 'Correntes sem relação com a carga'], 0, 'Em paralelo, cada ramo está conectado à mesma diferença de potencial da fonte.'],
+    ['Um resistor de 6 Ω ligado a 12 V conduz corrente de:', ['0,5 A', '2 A', '6 A', '72 A'], 1, 'Pela lei de Ohm, I = U/R = 12/6 = 2 A.'],
+    ['O efeito Joule corresponde à transformação de energia elétrica em:', ['Energia térmica', 'Energia nuclear', 'Massa', 'Energia química sempre'], 0, 'A corrente em um material resistivo pode aquecê-lo, convertendo energia elétrica em térmica.'],
+    ['Um aparelho de 1000 W funciona por 2 horas. O consumo é:', ['0,5 kWh', '2 kWh', '1000 kWh', '2000 kWh'], 1, '1 kW × 2 h = 2 kWh.'],
+    ['O disjuntor protege o circuito ao:', ['Interromper correntes excessivas', 'Aumentar a tensão da rede', 'Armazenar energia', 'Reduzir a resistência dos aparelhos'], 0, 'O disjuntor abre o circuito quando a corrente ultrapassa o limite previsto.'],
+    ['Para a mesma tensão, um aparelho de maior potência normalmente:', ['Solicita maior corrente', 'Solicita menor corrente', 'Não consome energia', 'Tem resistência infinita'], 0, 'Como P = U × I, mantendo U, maior potência corresponde a maior corrente.'],
+    ['Trocar uma lâmpada por outra de mesma iluminação e menor potência tende a:', ['Reduzir o consumo ao longo do mesmo tempo de uso', 'Aumentar o consumo', 'Manter corrente sempre zero', 'Aumentar a tensão da residência'], 0, 'Com menor potência e igual tempo de uso, a energia consumida diminui.'],
+  ],
+  'acid-base': [
+    ['Uma solução com pH 3 é, em relação a uma de pH 5:', ['Menos ácida', 'Mais ácida', 'Neutra', 'Necessariamente básica'], 1, 'Em soluções aquosas diluídas, menor pH indica maior acidez.'],
+    ['Uma neutralização entre ácido e base geralmente produz:', ['Sal e água', 'Oxigênio e metal', 'Apenas gás hidrogênio', 'Glicose'], 0, 'Em uma neutralização, íons H+ e OH− formam água, e os demais íons podem formar um sal.'],
+    ['Um indicador ácido-base serve para:', ['Sugerir o caráter ácido ou básico por mudança de cor', 'Medir diretamente a massa', 'Separar todos os sais', 'Aumentar a concentração de H+'], 0, 'Indicadores mudam de cor conforme a faixa de pH do meio.'],
+    ['Ao diluir um ácido com água, mantendo a quantidade de soluto, o pH tende a:', ['Aumentar em direção à neutralidade', 'Diminuir sempre até zero', 'Permanecer obrigatoriamente em 1', 'Tornar-se negativo'], 0, 'A diluição reduz a concentração de íons ácidos e aproxima o pH de 7.'],
+    ['A chuva ácida está associada principalmente a óxidos de:', ['Enxofre e nitrogênio', 'Hélio e neônio', 'Sódio e potássio metálicos', 'Carbono sólido e ouro'], 0, 'SOx e NOx podem reagir na atmosfera e originar ácidos que se depositam com a chuva.'],
+    ['Em água, uma base de Arrhenius aumenta a concentração de:', ['OH−', 'H+', 'N2', 'Elétrons livres no vácuo'], 0, 'Bases de Arrhenius liberam íons hidróxido em solução aquosa.'],
+    ['Uma solução tampão resiste a:', ['Variações bruscas de pH após pequenas adições de ácido ou base', 'Qualquer mudança de temperatura', 'Toda evaporação', 'Passagem de corrente em metal'], 0, 'Tampões atenuam variações de pH por conterem pares ácido-base conjugados.'],
+    ['No equilíbrio químico, as reações direta e inversa:', ['Continuam ocorrendo com velocidades iguais', 'Param completamente', 'Têm sempre concentrações iguais', 'Produzem apenas reagentes'], 0, 'Equilíbrio dinâmico significa velocidades iguais, não interrupção das reações.'],
+    ['Aumentar a concentração de um reagente em equilíbrio tende a favorecer:', ['Seu consumo pela reação que forma produtos', 'A interrupção de toda reação', 'A diminuição obrigatória de todos os produtos', 'A mudança da constante de equilíbrio pela concentração'], 0, 'O sistema responde à perturbação deslocando a composição; a constante depende principalmente da temperatura.'],
+  ],
+  electrochemistry: [
+    ['Em uma pilha em funcionamento, a energia química é convertida em:', ['Energia elétrica', 'Energia sonora apenas', 'Massa', 'Energia gravitacional'], 0, 'Reações espontâneas de oxirredução geram diferença de potencial e corrente elétrica.'],
+    ['Oxidação corresponde à:', ['Perda de elétrons', 'Ganho de elétrons', 'Perda de prótons sempre', 'Formação de água'], 0, 'A espécie oxidada perde elétrons e aumenta seu número de oxidação.'],
+    ['Redução corresponde ao:', ['Ganho de elétrons', 'Aumento obrigatório da massa', 'Ganho de nêutrons', 'Aumento do número de oxidação'], 0, 'A espécie reduzida recebe elétrons e diminui seu número de oxidação.'],
+    ['Na eletrólise, uma fonte externa de energia elétrica promove:', ['Uma reação não espontânea', 'Uma reação de combustão obrigatória', 'A interrupção do movimento iônico', 'Apenas aquecimento sem reação'], 0, 'A eletrólise usa energia elétrica para forçar uma transformação química não espontânea.'],
+    ['A corrosão do ferro é um processo de:', ['Oxidação do metal', 'Fusão nuclear', 'Neutralização ácido-base apenas', 'Destilação'], 0, 'O ferro perde elétrons e forma produtos de corrosão, processo favorecido por água e oxigênio.'],
+    ['Em uma pilha, os elétrons percorrem o circuito externo do:', ['Ânodo para o cátodo', 'Cátodo para o ânodo', 'Sal para a ponte salina', 'Eletrólito para a solução sem fio'], 0, 'Na pilha, a oxidação ocorre no ânodo e os elétrons chegam ao cátodo pelo circuito externo.'],
+    ['A ponte salina de uma pilha ajuda a:', ['Manter a neutralidade elétrica das soluções', 'Transportar elétrons diretamente entre eletrodos', 'Impedir toda reação', 'Aumentar a massa dos elétrons'], 0, 'Íons migram pela ponte salina e evitam acúmulo de carga nos compartimentos.'],
+    ['Revestir ferro com zinco pode protegê-lo porque o zinco:', ['Oxida-se preferencialmente, atuando como proteção sacrificial', 'Impede qualquer contato com elétrons', 'É um gás nobre', 'Transforma ferro em plástico'], 0, 'O zinco é oxidado antes do ferro e pode protegê-lo mesmo se o revestimento for danificado.'],
+    ['Na eletrólise, a quantidade de produto formado depende da carga elétrica que passou; carga é:', ['Corrente multiplicada pelo tempo', 'Tensão dividida pela massa', 'Potência dividida pela área', 'Resistência multiplicada pelo volume'], 0, 'Q = I × t; as leis de Faraday relacionam a carga à quantidade de transformação química.'],
+  ],
+};
+
+export function natureExpansionQuestions(id: keyof typeof natureExpansionEntries, topicId: TopicId = id): Question[] {
+  return natureExpansionEntries[id].map((entry, index) => ({
+    ...question(topicId, index, entry),
+    purpose: index < 3 ? 'diagnostic' : index < 6 ? 'practice' : 'review',
+  }));
+}
+
 // Languages: language-functions
 const languageEntries: Entry[] = [
   ['A função emotiva (ou expressiva) da linguagem destaca-se pelo foco:', ['No destinatário com ordens', 'No próprio emissor, em seus sentimentos, opiniões e marcas de 1ª pessoa', 'No código linguístico como dicionários', 'Apenas no canal de comunicação'], 1, 'A função emotiva evidencia a subjetividade e a emoção do locutor (eu, verbos na primeira pessoa, exclamações).', enem(2024, 'Azul', 15, 'H18')],

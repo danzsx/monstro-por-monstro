@@ -2,8 +2,8 @@ import { STATIC_TOPICS, mergeCatalogs, fetchPublishedCatalog, topicById, formatE
 import { Topic } from '@/learning/types';
 
 describe('Catalog dynamics and merging', () => {
-  test('STATIC_TOPICS contains 11 base topics across all core ENEM disciplines', () => {
-    expect(STATIC_TOPICS).toHaveLength(11);
+  test('STATIC_TOPICS contains 16 base topics across all core ENEM disciplines', () => {
+    expect(STATIC_TOPICS).toHaveLength(16);
     expect(STATIC_TOPICS.map(t => t.id)).toEqual([
       'proportions',
       'rule-of-three',
@@ -14,9 +14,24 @@ describe('Catalog dynamics and merging', () => {
       'calorimetry',
       'stoichiometry',
       'solutions',
+      'human-physiology',
+      'evolution',
+      'electricity',
+      'ph-hydrolysis',
+      'electrochemistry',
       'ecology',
       'language-functions',
     ]);
+  });
+
+  test('new nature topics include lessons and diagnostic, practice, and review questions', () => {
+    for (const id of ['human-physiology', 'evolution', 'electricity', 'ph-hydrolysis', 'electrochemistry'] as const) {
+      const topic = topicById(id, STATIC_TOPICS);
+      expect(topic.lessons.length).toBeGreaterThanOrEqual(4);
+      expect(topic.questions).toHaveLength(9);
+      expect(new Set(topic.questions.map(question => question.purpose))).toEqual(new Set(['diagnostic', 'practice', 'review']));
+      expect(topic.questions.every(question => question.topicId === id)).toBe(true);
+    }
   });
 
   test('formatEnemTag correctly generates official INEP tag strings', () => {
@@ -54,7 +69,7 @@ describe('Catalog dynamics and merging', () => {
     };
 
     const merged = mergeCatalogs(STATIC_TOPICS, [customNewTopic]);
-    expect(merged).toHaveLength(12);
+    expect(merged).toHaveLength(17);
     expect(merged.find(t => t.id === 'functions')).toBeDefined();
     expect(merged.find(t => t.id === 'functions')?.name).toBe('Funções Afins');
   });
