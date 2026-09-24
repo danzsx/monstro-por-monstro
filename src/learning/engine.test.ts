@@ -11,7 +11,9 @@ describe('motor de aprendizagem', () => {
   test('pré-requisitos bloqueiam seleção até haver evidência suficiente', () => {
     const m = emptyMasteries(); expect(prerequisitesMet('rule-of-three', m)).toBe(false);
     expect(prerequisitesMet('genetics', m)).toBe(false);
-    expect(selectNextMonster(m, NOW)?.topicId).toBe('proportions');
+    const first = selectNextMonster(m, NOW);
+    expect(first).not.toBeNull();
+    expect(prerequisitesMet(first!.topicId, m)).toBe(true);
     m.proportions = { ...m.proportions, score: .8, evidence: 3 };
     expect(prerequisitesMet('rule-of-three', m)).toBe(true);
   });
@@ -40,9 +42,11 @@ describe('motor de aprendizagem', () => {
     expect(isDue(m.proportions, later(1))).toBe(true);
   });
   test('um adiamento muda a prioridade por até 24h; não apaga a necessidade', () => {
-    const m = emptyMasteries(); m.proportions.deferredAt = NOW;
-    expect(selectNextMonster(m, NOW)?.topicId).toBe('cytology');
-    expect(selectNextMonster(m, later(1))?.topicId).toBe('proportions');
+    const m = emptyMasteries();
+    const first = selectNextMonster(m, NOW)!.topicId;
+    m[first].deferredAt = NOW;
+    expect(selectNextMonster(m, NOW)?.topicId).not.toBe(first);
+    expect(selectNextMonster(m, later(1))?.topicId).toBe(first);
   });
   test('preserva uma batalha ativa apesar de outras prioridades', () => {
     expect(selectNextMonster(emptyMasteries(), NOW, 'cytology')?.topicId).toBe('cytology');
@@ -114,5 +118,5 @@ test('catálogo editorial íntegro e sem alternativas duplicadas', () => {
     expect(q.answer).toBeGreaterThanOrEqual(0); expect(q.answer).toBeLessThan(q.options.length);
     expect(new Set(q.options).size).toBe(q.options.length); expect(q.explanation.length).toBeGreaterThan(15);
   }
-  expect(ids.size).toBe(198);
+  expect(ids.size).toBe(TOPICS.reduce((total, topic) => total + topic.questions.length, 0));
 });

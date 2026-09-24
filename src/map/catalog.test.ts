@@ -47,7 +47,7 @@ describe('vínculos com monstros e progresso', () => {
     const masteries = emptyMasteries();
     const before = JSON.stringify(masteries);
     const resolved = MAP_NODES.map(n => resolveNodeState(n, STATIC_TOPICS, masteries));
-    expect(resolved.filter(n => n.topic).map(n => n.topic!.id).sort()).toEqual(['atomic-models', 'biomolecules', 'biotechnology', 'calorimetry', 'cancer', 'cell-division', 'cell-metabolism', 'cell-origin', 'comparative-biology', 'cytology', 'dna-proteins', 'ecology', 'ecosystems', 'electricity', 'electrochemistry', 'embryology', 'evolution', 'genetics', 'human-evolution', 'human-physiology', 'immunity', 'kinematics', 'life-cycles', 'living-beings', 'membrane-transport', 'mutations', 'newton-laws', 'photosynthesis', 'ph-hydrolysis', 'population-genetics', 'solutions', 'stoichiometry', 'taxonomy', 'tissues', 'water-minerals']);
+    expect(resolved.filter(n => n.topic).map(n => n.topic!.id).sort()).toEqual(['atomic-models', 'biomolecules', 'biotechnology', 'calorimetry', 'cancer', 'cell-division', 'cell-metabolism', 'cell-origin', 'comparative-biology', 'cytology', 'dna-proteins', 'ecology', 'ecosystems', 'electricity', 'electrochemistry', 'embryology', 'evolution', 'genetics', 'human-evolution', 'human-physiology', 'immunity', 'kinematics', 'life-cycles', 'living-beings', 'membrane-transport', 'mutations', 'newton-laws', 'photosynthesis', 'ph-hydrolysis', 'population-genetics', 'solutions', 'stoichiometry', 'taxonomy', 'tissues', 'water-minerals'].sort());
     expect(JSON.stringify(masteries)).toBe(before);
     expect(STATIC_TOPICS).toHaveLength(38);
   });

@@ -52,12 +52,16 @@ function MapContent({ routeNode }: { routeNode?: string }) {
     setSheet(undefined);
     router.push({ pathname: '/monster', params: { topicId, from: 'map', mapNode: selectedId } });
   };
+  const openApostila = (topicId: string) => {
+    setSheet(undefined);
+    router.push({ pathname: '/apostila', params: { topicId, from: 'map', mapNode: selectedId } });
+  };
   const groupList = <ScrollView contentContainerStyle={{ padding: 20, gap: 22 }}>
     <View style={{ gap: 9 }}><Compass size={27} color={c.purple} /><Heading size={24}>Seu próximo caminho.</Heading><Txt size={13} color={c.muted}>Explore um território e toque em um conteúdo para descobrir suas conexões.</Txt></View>
     {TERRITORIES.filter(t => !filter || t.id === filter).map(territory => <View key={territory.id} style={{ gap: 8 }}><Eyebrow color={territory.color}>{territory.name}</Eyebrow>{groups.filter(g => g.territory === territory.id).map(group => <Pressable key={group.id} accessibilityRole="button" accessibilityLabel={`Explorar ${group.title}`} onPress={() => openGroup(group.id)} style={({ hovered }) => ({ minHeight: 48, padding: 11, borderRadius: 12, backgroundColor: hovered ? territory.fill : '#FAF7F2', flexDirection: 'row', gap: 10, alignItems: 'center' })}><Txt size={13} weight="medium" color={c.purple} style={{ flex: 1 }}>{group.title}</Txt><Txt size={10} color={c.muted}>{MAP_NODES.filter(n => n.groupId === group.id).length}</Txt><ArrowRight size={14} color={territory.color} /></Pressable>)}</View>)}
     <Txt size={11} color={c.muted}>O mapa organiza relações de aprendizagem. Posição, cor e tamanho não representam frequência de cobrança no ENEM.</Txt>
   </ScrollView>;
-  const detail = selected ? <NodeDetail node={selected} onSelect={select} onClose={closeDetail} onMonster={openMonster} /> : null;
+  const detail = selected ? <NodeDetail node={selected} onSelect={select} onClose={closeDetail} onMonster={openMonster} onApostila={openApostila} /> : null;
 
   return <View style={{ flex: 1 }}>
     <View style={{ paddingHorizontal: wide ? 28 : 18, paddingTop: wide ? 25 : 16, paddingBottom: 16, gap: 14 }}>

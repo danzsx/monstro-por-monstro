@@ -6,11 +6,13 @@ import { colors as c } from '@/ui/theme';
 import { GROUPS_BY_ID, NODES_BY_ID, relationsFor, resolveNodeState, TERRITORIES } from './catalog';
 import { SOURCES } from './sources';
 import type { MapEdge, MapNode } from './types';
+import { usePublishedModuleIds } from '@/apostila/data';
 
-export function NodeDetail({ node, onSelect, onClose, onMonster }: {
-  node: MapNode; onSelect: (id: string) => void; onClose: () => void; onMonster: (topicId: string) => void;
+export function NodeDetail({ node, onSelect, onClose, onMonster, onApostila }: {
+  node: MapNode; onSelect: (id: string) => void; onClose: () => void; onMonster: (topicId: string) => void; onApostila?: (topicId: string) => void;
 }) {
   const { topics, state } = useApp();
+  const hasModule = usePublishedModuleIds();
   const status = resolveNodeState(node, topics, state.masteries);
   const group = GROUPS_BY_ID[node.groupId];
   const territory = TERRITORIES.find(t => t.id === group.territory)!;
@@ -27,7 +29,7 @@ export function NodeDetail({ node, onSelect, onClose, onMonster }: {
     <View style={{ padding: 16, paddingBottom: 7, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}><Eyebrow color={territory.color}>FICHA DE EXPLORAÇÃO</Eyebrow><Pressable accessibilityRole="button" accessibilityLabel="Fechar ficha" onPress={onClose} hitSlop={4} style={{ width: 44, height: 44, alignItems: 'center', justifyContent: 'center' }}><X size={20} color={c.purple} /></Pressable></View>
     <ScrollView key={node.id} contentContainerStyle={{ padding: 20, paddingTop: 4, paddingBottom: 36, gap: 23 }}>
       <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}><View style={{ flex: 1, gap: 9 }}><Txt size={11} weight="bold" color={territory.color}>{territory.name} · {group.title}</Txt><Heading size={27}>{node.title}</Heading></View>{status.topic ? <Monster id={status.topic.id} size={76} /> : <View style={{ backgroundColor: territory.fill, padding: 15, borderRadius: 28 }}><Sprout size={27} color={territory.color} /></View>}</View>
-      <View style={{ gap: 13 }}><Pill green={status.mastery?.stage === 'mastered'}>{status.label}</Pill><Txt size={14} style={{ lineHeight: 23 }}>{node.summary}</Txt>{status.topic && <Button title="Conhecer este monstro" onPress={() => onMonster(status.topic!.id)} />}</View>
+      <View style={{ gap: 13 }}><Pill green={status.mastery?.stage === 'mastered'}>{status.label}</Pill><Txt size={14} style={{ lineHeight: 23 }}>{node.summary}</Txt>{status.topic && hasModule(status.topic.id) && onApostila && <Button title="Abrir apostila interativa" onPress={() => onApostila(status.topic!.id)} />}{status.topic && <Button title="Conhecer este monstro" variant="secondary" onPress={() => onMonster(status.topic!.id)} />}</View>
       <View style={{ backgroundColor: c.lavender, borderRadius: 15, padding: 14, gap: 5 }}><Txt size={12} weight="bold" color={c.purple}>Você escolhe o caminho.</Txt><Txt size={12} color={c.purple}>Estas ligações são curadoria pedagógica. Sugerem uma sequência de estudo e não bloqueiam suas batalhas.</Txt></View>
       {section('Estude antes', links.before, 'Você pode começar por aqui. Nenhuma base anterior foi indicada neste mapa.')}
       {section('Ajuda a aprender', links.after, 'Novos caminhos podem surgir conforme você explora.')}

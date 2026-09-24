@@ -2,6 +2,7 @@ import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import type { Session } from '@supabase/supabase-js';
 import { supabase } from './lib/supabase';
+import { InteractiveEditor } from './interactive-editor';
 import './styles.css';
 
 type Status = 'draft' | 'review' | 'published' | 'archived';
@@ -59,11 +60,11 @@ function Login() {
 }
 
 function AdminApp({ session }: { session: Session }) {
-  const [view, setView] = useState<'dashboard' | 'topics' | 'editor'>('dashboard'); const [editing, setEditing] = useState<TopicVersion | null>(null); const [refresh, setRefresh] = useState(0); const [denied, setDenied] = useState(false);
+  const [view, setView] = useState<'dashboard' | 'topics' | 'editor' | 'interactive'>('dashboard'); const [editing, setEditing] = useState<TopicVersion | null>(null); const [refresh, setRefresh] = useState(0); const [denied, setDenied] = useState(false);
   useEffect(() => { supabase!.from('admin_profiles').select('user_id').eq('user_id', session.user.id).eq('active', true).maybeSingle().then(({ data, error }) => { if (error || !data) setDenied(true); }); }, [session.user.id]);
   if (denied) return <div className="center"><div className="login-card"><h1>Acesso restrito</h1><p>Seu usuário está autenticado, mas ainda não foi autorizado como administrador.</p><button className="secondary" onClick={() => supabase!.auth.signOut()}>Sair</button></div></div>;
   const edit = (topic: TopicVersion) => { setEditing(topic); setView('editor'); };
-  return <div className="app-shell"><aside><div className="logo">monstro <span>por</span> monstro</div><p className="side-caption">PAINEL EDITORIAL</p><nav><button className={view === 'dashboard' ? 'active' : ''} onClick={() => setView('dashboard')}>Visão geral</button><button className={view === 'topics' ? 'active' : ''} onClick={() => setView('topics')}>Monstros e aulas</button></nav><div className="side-bottom"><span>{session.user.email}</span><button className="link-button" onClick={() => supabase!.auth.signOut()}>Sair</button></div></aside><main><header><div><p className="eyebrow">EDITORIAL</p><h2>{view === 'dashboard' ? 'Visão geral' : view === 'topics' ? 'Monstros e aulas' : editing ? `Editando ${editing.name}` : 'Novo monstro'}</h2></div>{view === 'topics' && <button className="primary" onClick={() => { setEditing(null); setView('editor'); }}>+ Novo monstro</button>}</header>{view === 'dashboard' ? <Dashboard refresh={refresh} onOpenTopics={() => setView('topics')} /> : view === 'topics' ? <TopicList refresh={refresh} onEdit={edit} /> : <TopicEditor topic={editing} onDone={() => { setRefresh(v => v + 1); setView('topics'); }} />}</main></div>;
+  return <div className="app-shell"><aside><div className="logo">monstro <span>por</span> monstro</div><p className="side-caption">PAINEL EDITORIAL</p><nav><button className={view === 'dashboard' ? 'active' : ''} onClick={() => setView('dashboard')}>Visão geral</button><button className={view === 'topics' || view === 'editor' ? 'active' : ''} onClick={() => setView('topics')}>Monstros e aulas</button><button className={view === 'interactive' ? 'active' : ''} onClick={() => setView('interactive')}>Apostilas interativas</button></nav><div className="side-bottom"><span>{session.user.email}</span><button className="link-button" onClick={() => supabase!.auth.signOut()}>Sair</button></div></aside><main><header><div><p className="eyebrow">EDITORIAL</p><h2>{view === 'dashboard' ? 'Visão geral' : view === 'topics' ? 'Monstros e aulas' : view === 'interactive' ? 'Apostilas interativas' : editing ? `Editando ${editing.name}` : 'Novo monstro'}</h2></div>{view === 'topics' && <button className="primary" onClick={() => { setEditing(null); setView('editor'); }}>+ Novo monstro</button>}</header>{view === 'dashboard' ? <Dashboard refresh={refresh} onOpenTopics={() => setView('topics')} /> : view === 'topics' ? <TopicList refresh={refresh} onEdit={edit} /> : view === 'interactive' ? <InteractiveEditor /> : <TopicEditor topic={editing} onDone={() => { setRefresh(v => v + 1); setView('topics'); }} />}</main></div>;
 }
 
 function Dashboard({ refresh, onOpenTopics }: { refresh: number; onOpenTopics: () => void }) {

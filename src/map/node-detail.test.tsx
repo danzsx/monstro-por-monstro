@@ -5,6 +5,7 @@ import { NODES_BY_ID } from './catalog';
 import { NodeDetail } from './node-detail';
 
 jest.mock('@/data/provider', () => ({ useApp: jest.fn() }));
+jest.mock('@/apostila/data', () => ({ usePublishedModuleIds: () => (topicId: string) => topicId === 'cytology' }));
 jest.mock('lucide-react-native', () => ({ ArrowRight: () => null, BookOpen: () => null, ExternalLink: () => null, Sprout: () => null, X: () => null, Check: () => null }));
 beforeEach(() => {
   (useApp as jest.Mock).mockReturnValue({ topics: STATIC_TOPICS, state: { masteries: {} }, online: false });
@@ -19,7 +20,15 @@ test('a ficha funciona sem conexão e abre somente o monstro resolvido no catál
   expect(view.getByRole('link', { name: /Abrir matriz oficial/ })).toBeTruthy();
 }, 15000); // The first native component render also initializes Expo Image in Jest.
 
+test('Citologia oferece a apostila incluída no app e preserva o ID para retorno', async () => {
+  const open = jest.fn();
+  const view = await render(<NodeDetail node={NODES_BY_ID.cytology} onSelect={jest.fn()} onClose={jest.fn()} onMonster={jest.fn()} onApostila={open} />);
+  await fireEvent.press(view.getByRole('button', { name: 'Abrir apostila interativa' }));
+  expect(open).toHaveBeenCalledWith('cytology');
+});
+
 test('conteúdo em preparação mantém resumo e relações acessíveis, sem botão de monstro', async () => {
+  (useApp as jest.Mock).mockReturnValue({ topics: [], state: { masteries: {} }, online: false });
   const select = jest.fn();
   const view = await render(<NodeDetail node={NODES_BY_ID['membrane-transport']} onSelect={select} onClose={jest.fn()} onMonster={jest.fn()} />);
   expect(view.getByText('Monstro em preparação')).toBeTruthy();

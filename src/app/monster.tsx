@@ -7,6 +7,7 @@ import { calculateRetention } from '@/learning/engine';
 import { Button, Card, Eyebrow, Heading, Monster, Page, Pill, Txt } from '@/ui/primitives';
 import { colors as c } from '@/ui/theme';
 import type { EnemGuidance } from '@/learning/types';
+import { usePublishedModuleIds } from '@/apostila/data';
 
 function BulletList({ items }: { items: string[] }) {
   return <View style={{ gap: 13 }}>{items.map((item, index) => <View key={`${index}-${item}`} style={{ flexDirection: 'row', gap: 11, alignItems: 'flex-start' }}><View style={{ width: 8, height: 8, borderRadius: 8, backgroundColor: c.greenDark, marginTop: 7 }} /><Txt style={{ flex: 1, lineHeight: 25 }}>{item}</Txt></View>)}</View>;
@@ -42,6 +43,7 @@ export default function MonsterKnowledgeScreen() {
     else router.replace('/bestiary');
   };
   const { topicById, state } = useApp();
+  const hasModule = usePublishedModuleIds();
   const { width } = useWindowDimensions();
   const topic = useMemo(() => {
     try { return topicById(topicId); } catch { return null; }
@@ -60,6 +62,7 @@ export default function MonsterKnowledgeScreen() {
       <View style={{ alignItems: 'center' }}><Monster id={topic.id} size={horizontal ? 210 : 180} /><Pill>{topic.discipline.toUpperCase()}</Pill></View>
     </View>
 
+    {hasModule(topic.id) && <Button title="Abrir apostila interativa" onPress={() => router.push({ pathname: '/apostila', params: { topicId: topic.id, from: 'monster', mapNode } })} />}
     <View style={{ gap: 12 }}><View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}><BookOpen color={c.purple} size={21} /><Eyebrow color={c.purple}>ALÉM DA MATÉRIA</Eyebrow></View>
       {context?.overview ? <Card><Heading size={22}>O que é e para que serve?</Heading><Txt style={{ lineHeight: 26 }}>{context.overview}</Txt></Card> : <Card><Heading size={22}>O que é e para que serve?</Heading><Txt style={{ lineHeight: 26 }}>{topic.relevance || topic.description}</Txt></Card>}
     </View>
