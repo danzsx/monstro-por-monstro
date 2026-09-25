@@ -18,6 +18,12 @@ export interface StudentModel {
   perception: Feeling; ageConfirmed: boolean;
 }
 export interface AffectiveCheckIn { topicId: TopicId; feeling: Feeling; barrier?: Barrier; at: string }
+export type ConfidenceLevel = 'low' | 'medium' | 'high';
+export interface ConfidenceRating { id: string; topicId: TopicId; level: ConfidenceLevel; at: string; battleId?: string }
+export interface CompletedStudySession {
+  id: string; topicId: TopicId; startedAt: string; completedAt: string;
+  activeMs: number; mode: BattlePlan['mode']; stageAtCompletion: TopicMastery['stage'];
+}
 export interface AttemptEvent {
   id: string; questionId: string; topicId: TopicId; answer: number; correct: boolean;
   assisted: boolean; at: string; source: 'diagnostic' | 'practice' | 'review'; battleId?: string;

@@ -6,7 +6,8 @@ import { useApp } from '@/data/provider';
 import { useActions } from '@/learning/actions';
 import { buildRepairChallenge, intervention, updateMastery } from '@/learning/engine';
 import { formatEnemTag } from '@/content/catalog';
-import { Feeling, Barrier, AffectiveCheckIn } from '@/learning/types';
+import { Feeling, Barrier, AffectiveCheckIn, ConfidenceLevel } from '@/learning/types';
+import { useStudyTimer } from '@/journey/use-study-timer';
 import { Button, Card, Choice, Eyebrow, Heading, Page, Pill, Progress, Txt } from '@/ui/primitives';
 import { colors as c } from '@/ui/theme';
 import { useTask } from '@/ui/use-task';
@@ -16,7 +17,9 @@ export default function BattleScreen() {
   const { state, topicById, questionById } = useApp(); const actions = useActions(); const task = useTask();
   const [choice, setChoice] = useState<number | null>(null);
   const [repairChoice, setRepairChoice] = useState<number | null>(null);
+  const [confidence, setConfidence] = useState<ConfidenceLevel | null>(null);
   const battle = state.activeBattle;
+  const timer = useStudyTimer(battle?.plan.id, battle ? `${battle.phase}:${battle.blockIndex}:${battle.questionIndex}:${battle.revealed}` : undefined);
   if (!battle) return <Redirect href="/" />;
   const topic = topicById(battle.plan.topicId);
   const mastery = state.masteries[topic.id] ?? { topicId: topic.id, score: 0, evidence: 0, encountered: false, stage: 'unseen', reviewLevel: 0 };
@@ -34,7 +37,13 @@ export default function BattleScreen() {
   });
   const selectBarrier = (barrier: Barrier) => task.run(() => actions.setIntervention({ ...battle.checkIn!, barrier }));
   const result = battle.phase === 'complete' ? updateMastery(mastery, battle.attempts, new Date().toISOString()) : null;
-  return <Page narrow><View style={{ gap: 12 }}><View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}><Eyebrow>{topic.discipline.toUpperCase()} · {battle.plan.estimatedMinutes} MIN</Eyebrow><Pill>{battle.decision.review ? 'REVISÃO' : 'EM APRENDIZAGEM'}</Pill></View><Heading size={29}>{topic.name}</Heading><Progress value={current / steps} label="Progresso da batalha" /></View>
+  const complete = (destination: '/bestiary' | '/') => task.run(async () => {
+    await timer.flush();
+    if (confidence) await actions.rateConfidence(topic.id, confidence, battle.plan.id);
+    await actions.finishBattle();
+    router.replace(destination);
+  });
+  return <Page narrow onActivity={timer.markActivity}><View style={{ gap: 12 }}><View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}><Eyebrow>{topic.discipline.toUpperCase()} · {battle.plan.estimatedMinutes} MIN</Eyebrow><Pill>{battle.decision.review ? 'REVISÃO' : 'EM APRENDIZAGEM'}</Pill></View><Heading size={29}>{topic.name}</Heading><Progress value={current / steps} label="Progresso da batalha" /></View>
     <View style={{ alignItems: 'center', gap: 4 }}><BattleMonster battle={battle} /><View style={{ width: '100%', maxWidth: 340, gap: 7 }} accessibilityLiveRegion="polite"><View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}><Eyebrow>VIDA DO MONSTRO</Eyebrow><Txt size={12} weight="bold" color={c.purple} style={{ fontVariant: ['tabular-nums'] }}>{Math.round(health * 100)}%</Txt></View><Progress value={health} label="Vida do monstro" /></View></View>
     {battle.phase === 'check-in' && <Card style={{ alignItems: 'center', gap: 20 }}><Heading>Como você está chegando?</Heading><Txt color={c.muted}>A gente ajusta o primeiro passo.</Txt><View style={{ alignSelf: 'stretch', gap: 10 }}>{([{ id: 'confident', label: 'Confiante' }, { id: 'insecure', label: 'Inseguro' }, { id: 'anxious', label: 'Ansioso' }, { id: 'avoid', label: 'Quero evitar' }] as { id: Feeling; label: string }[]).map(f => <Button key={f.id} title={f.label} variant="secondary" disabled={task.busy} onPress={() => selectFeeling(f.id)} />)}</View></Card>}
     {battle.phase === 'barrier' && <Card style={{ gap: 20 }}><Heart size={26} color={c.purple} /><Heading size={28}>O que está pesando mais?</Heading><Txt color={c.muted}>Pode escolher o que mais se aproxima. Essa resposta não muda sua nota.</Txt>{([{ id: 'difficulty', label: 'Parece difícil demais' }, { id: 'tired', label: 'Estou sem energia' }, { id: 'relevance', label: 'Não vejo por que aprender isso' }, { id: 'history', label: 'Já tentei e não consegui' }] as { id: Barrier; label: string }[]).map(b => <Button key={b.id} title={b.label} variant="secondary" disabled={task.busy} onPress={() => selectBarrier(b.id)} />)}</Card>}
@@ -95,7 +104,7 @@ export default function BattleScreen() {
         )}
       </Card>;
     })()}
-    {battle.phase === 'complete' && <Card style={{ alignItems: 'center', gap: 20 }}><Pill green>{result?.stage === 'mastered' ? 'MONSTRO DOMINADO' : 'MAIS UM PASSO CONQUISTADO'}</Pill><Heading>{result?.stage === 'mastered' ? 'Esse conhecimento ficou.' : battle.plan.mode === 'micro' ? 'Você começou. Isso conta.' : 'Seu esforço ganhou forma.'}</Heading><Txt size={20} weight="bold" color={c.purple}>{battle.attempts.filter(a => a.correct).length} de {battle.attempts.length} respostas corretas</Txt>{battle.attempts.some(a => a.repaired) && <Pill green>{battle.attempts.filter(a => a.repaired).length} {battle.attempts.filter(a => a.repaired).length === 1 ? 'conceito reparado na hora' : 'conceitos reparados na hora'}</Pill>}<Txt color={c.muted}>{result?.stage === 'mastered' ? 'Você demonstrou aprendizagem novamente depois de um intervalo. Seu monstro segue no bestiário e volta para pequenas revisões.' : result?.stage === 'consolidating' ? 'A prática de hoje foi bem. Vamos reencontrar este monstro a partir de amanhã para conferir o que ficou na memória.' : 'Este monstro já faz parte da sua jornada. Vamos fortalecer a base em uma próxima batalha.'}</Txt><View style={{ width: '100%', gap: 10 }}><Button title="Guardar no meu bestiário" icon={<CheckCircle2 size={18} color={c.purple} />} busy={task.busy} onPress={() => task.run(async () => { await actions.finishBattle(); router.replace('/bestiary'); })} /><Button title="Concluir e voltar ao início" variant="ghost" onPress={() => task.run(async () => { await actions.finishBattle(); router.replace('/'); })} /></View></Card>}
+    {battle.phase === 'complete' && <Card style={{ alignItems: 'center', gap: 20 }}><Pill green>{result?.stage === 'mastered' ? 'MONSTRO DOMINADO' : 'MAIS UM PASSO CONQUISTADO'}</Pill><Heading>{result?.stage === 'mastered' ? 'Esse conhecimento ficou.' : battle.plan.mode === 'micro' ? 'Você começou. Isso conta.' : 'Seu esforço ganhou forma.'}</Heading><Txt size={20} weight="bold" color={c.purple}>{battle.attempts.filter(a => a.correct).length} de {battle.attempts.length} respostas corretas</Txt>{battle.attempts.some(a => a.repaired) && <Pill green>{battle.attempts.filter(a => a.repaired).length} {battle.attempts.filter(a => a.repaired).length === 1 ? 'conceito reparado na hora' : 'conceitos reparados na hora'}</Pill>}<Txt color={c.muted}>{result?.stage === 'mastered' ? 'Você demonstrou aprendizagem novamente depois de um intervalo. Seu monstro segue no bestiário e volta para pequenas revisões.' : result?.stage === 'consolidating' ? 'A prática de hoje foi bem. Vamos reencontrar este monstro a partir de amanhã para conferir o que ficou na memória.' : 'Este monstro já faz parte da sua jornada. Vamos fortalecer a base em uma próxima batalha.'}</Txt><View style={{ width: '100%', gap: 8 }}><Txt weight="bold" color={c.purple}>Como está sua confiança neste monstro?</Txt><Txt size={12} color={c.muted}>Opcional. Sua escolha não altera seu resultado.</Txt><View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>{(['low', 'medium', 'high'] as ConfidenceLevel[]).map((level, index) => <Button key={level} title={['Baixa', 'Média', 'Alta'][index]} variant={confidence === level ? 'primary' : 'secondary'} onPress={() => { timer.markActivity(); setConfidence(level); }} />)}</View></View><View style={{ width: '100%', gap: 10 }}><Button title="Guardar no meu bestiário" icon={<CheckCircle2 size={18} color={c.purple} />} busy={task.busy} onPress={() => complete('/bestiary')} /><Button title="Concluir e voltar ao início" variant="ghost" busy={task.busy} onPress={() => complete('/')} /></View></Card>}
     {task.error && <Txt color={c.danger}>{task.error}</Txt>}{battle.phase !== 'complete' && <Button title="Pausar e continuar depois" variant="ghost" icon={<RotateCcw size={15} color={c.purple} />} onPress={() => router.replace('/')} />}<Txt size={11} color={c.muted} style={{ textAlign: 'center' }}>Aprender no seu ritmo também é progresso.</Txt>
   </Page>;
 }

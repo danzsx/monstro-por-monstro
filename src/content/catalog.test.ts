@@ -2,8 +2,8 @@ import { STATIC_TOPICS, mergeCatalogs, fetchPublishedCatalog, topicById, formatE
 import { Topic } from '@/learning/types';
 
 describe('Catalog dynamics and merging', () => {
-  test('STATIC_TOPICS contains 38 base topics across all core ENEM disciplines', () => {
-    expect(STATIC_TOPICS).toHaveLength(38);
+  test('STATIC_TOPICS contains 39 base topics across all core ENEM disciplines', () => {
+    expect(STATIC_TOPICS).toHaveLength(39);
     expect(STATIC_TOPICS.map(t => t.id)).toEqual([
       'proportions',
       'rule-of-three',
@@ -14,6 +14,7 @@ describe('Catalog dynamics and merging', () => {
       'calorimetry',
       'stoichiometry',
       'solutions',
+      'covalent-bonds',
       'atomic-models',
       'biomolecules',
       'dna-proteins',
@@ -110,7 +111,7 @@ describe('Catalog dynamics and merging', () => {
     };
 
     const merged = mergeCatalogs(STATIC_TOPICS, [customNewTopic]);
-    expect(merged).toHaveLength(39);
+    expect(merged).toHaveLength(40);
     expect(merged.find(t => t.id === 'functions')).toBeDefined();
     expect(merged.find(t => t.id === 'functions')?.name).toBe('Funções Afins');
   });

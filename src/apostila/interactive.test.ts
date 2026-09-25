@@ -1,4 +1,5 @@
 import { CYTOLOGY_MODULE } from './cytology';
+import { COVALENT_BONDS_MODULE } from './covalent-bonds';
 import { bundledModule, selectInteractiveModule } from './selection';
 import { describeOsmosis } from './osmosis';
 import { parseInteractiveModule, validateInteractiveModule } from '../../shared/interactive-module';
@@ -11,10 +12,18 @@ test('a apostila autoral tem seis etapas, verificações e formato válido', () 
 
 test('conteúdo inválido não substitui a apostila incluída no app', () => {
   expect(bundledModule('cytology')).toBe(CYTOLOGY_MODULE);
+  expect(bundledModule('covalent-bonds')).toBe(COVALENT_BONDS_MODULE);
   expect(selectInteractiveModule('cytology', { schemaVersion: 99 }, true)).toBe(CYTOLOGY_MODULE);
+  expect(selectInteractiveModule('covalent-bonds', { schemaVersion: 99 }, true)).toBe(COVALENT_BONDS_MODULE);
   expect(selectInteractiveModule('cytology', null, false)).toBe(CYTOLOGY_MODULE);
   expect(parseInteractiveModule({ ...CYTOLOGY_MODULE, topicId: 'other' }, 'cytology')).toBeNull();
   expect(selectInteractiveModule('other', CYTOLOGY_MODULE, true)).toBeNull();
+});
+
+test('a aula de ligações covalentes mantém o recorte do capítulo e o formato válido', () => {
+  expect(COVALENT_BONDS_MODULE.sections).toHaveLength(6);
+  expect(validateInteractiveModule(COVALENT_BONDS_MODULE, 'covalent-bonds')).toEqual([]);
+  expect(COVALENT_BONDS_MODULE.sections.some(section => section.title === 'O octeto tem exceções')).toBe(true);
 });
 
 test('uma versão publicada válida aparece online e a versão local volta offline', () => {

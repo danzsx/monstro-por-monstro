@@ -3,13 +3,16 @@ import { useApp } from '@/data/provider';
 import { questionById } from '@/content/catalog';
 import { battleReducer, BattleAction, BattleState } from '@/battle/machine';
 import { evaluateDiagnostic, nextDiagnosticQuestion } from '@/diagnostic/engine';
-import { AffectiveCheckIn, AnalyticsEvent, AttemptEvent, NextMonsterDecision, StudentModel } from './types';
+import { AffectiveCheckIn, AnalyticsEvent, AttemptEvent, ConfidenceLevel, NextMonsterDecision, StudentModel, TopicId } from './types';
 import { buildBattlePlan, DAY, selectNextMonster, updateMastery } from './engine';
 const timestamp = () => new Date().toISOString();
 export function useActions() {
   const { commit } = useApp();
   return {
     saveStudent: (student: StudentModel) => commit(s => ({ ...s, student })),
+    rateConfidence: (topicId: TopicId, level: ConfidenceLevel, battleId?: string) => commit(s => ({
+      ...s, confidenceRatings: [...(s.confidenceRatings ?? []), { id: randomUUID(), topicId, level, at: timestamp(), battleId }],
+    })),
     answerDiagnostic: (questionId: string, familiarity: number) => {
       const question = questionById(questionId); const at = timestamp();
       // The initial conversation records a student's self-reported familiarity,
@@ -62,7 +65,8 @@ export function useActions() {
         const topicId = battle.plan.topicId;
         const currentMastery = s.masteries[topicId] ?? { topicId, score: 0, evidence: 0, encountered: false, stage: 'unseen', reviewLevel: 0 };
         const event: AnalyticsEvent = { id: randomUUID(), name: 'battle_completed', at, topicId };
-        return { ...s, masteries: { ...s.masteries, [topicId]: updateMastery(currentMastery, battle.attempts, at) }, attempts: [...s.attempts, ...battle.attempts], completedBattles: [...s.completedBattles, battle.plan.id], firstBattleCompletedAt: s.firstBattleCompletedAt ?? at, lastTopic: topicId, activeBattle: null, analytics: [...s.analytics, event] };
+        const mastery = updateMastery(currentMastery, battle.attempts, at);
+        return { ...s, masteries: { ...s.masteries, [topicId]: mastery }, attempts: [...s.attempts, ...battle.attempts], completedBattles: [...s.completedBattles, battle.plan.id], completedSessions: [...(s.completedSessions ?? []), { id: battle.plan.id, topicId, startedAt: battle.startedAt, completedAt: at, activeMs: battle.activeMs ?? 0, mode: battle.plan.mode, stageAtCompletion: mastery.stage }], firstBattleCompletedAt: s.firstBattleCompletedAt ?? at, lastTopic: topicId, activeBattle: null, analytics: [...s.analytics, event] };
       });
     },
     defer: () => {

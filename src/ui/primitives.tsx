@@ -53,9 +53,9 @@ export function Monster({ id, size = 260, muted = false }: { id: TopicId; size?:
   const source = monsters[id] ?? monsters.proportions;
   return <Image source={source} contentFit="contain" accessibilityLabel={`Monstro ${id}`} style={{ width: size, height: size, opacity: muted ? .32 : 1 }} />;
 }
-export function Page({ children, narrow = false }: PropsWithChildren<{ narrow?: boolean }>) {
+export function Page({ children, narrow = false, onActivity }: PropsWithChildren<{ narrow?: boolean; onActivity?: () => void }>) {
   const { width } = useWindowDimensions();
-  return <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={{ padding: width < 700 ? 22 : 44, paddingBottom: 36, flexGrow: 1 }} style={{ backgroundColor: c.background }}><View style={{ width: '100%', maxWidth: narrow ? 760 : 1160, alignSelf: 'center', gap: 28 }}>{children}</View></ScrollView>;
+  return <ScrollView contentInsetAdjustmentBehavior="automatic" onTouchStart={onActivity} onScroll={onActivity} scrollEventThrottle={1000} contentContainerStyle={{ padding: width < 700 ? 22 : 44, paddingBottom: 36, flexGrow: 1 }} style={{ backgroundColor: c.background }}><View style={{ width: '100%', maxWidth: narrow ? 760 : 1160, alignSelf: 'center', gap: 28 }}>{children}</View></ScrollView>;
 }
 export function Progress({ value, label }: { value: number; label: string }) { return <View style={{ gap: 8 }} accessibilityRole="progressbar" accessibilityLabel={label} accessibilityValue={{ min: 0, max: 100, now: Math.round(value * 100) }}><View style={{ height: 7, backgroundColor: c.lavender, borderRadius: 20, overflow: 'hidden' }}><View style={{ height: 7, width: `${Math.min(100, Math.max(0, value * 100))}%`, backgroundColor: c.green, borderRadius: 20 }} /></View></View>; }
 export function Choice({ text, selected, onPress, disabled, index }: { text: string; selected: boolean; onPress: () => void; disabled?: boolean; index?: number }) {

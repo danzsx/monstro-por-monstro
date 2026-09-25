@@ -3,10 +3,11 @@ import { View, useWindowDimensions } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ArrowLeft, ArrowRight, BookOpen, FlaskConical, Microscope, Target } from 'lucide-react-native';
 import { useApp } from '@/data/provider';
+import { useActions } from '@/learning/actions';
 import { calculateRetention } from '@/learning/engine';
 import { Button, Card, Eyebrow, Heading, Monster, Page, Pill, Txt } from '@/ui/primitives';
 import { colors as c } from '@/ui/theme';
-import type { EnemGuidance } from '@/learning/types';
+import type { ConfidenceLevel, EnemGuidance } from '@/learning/types';
 import { usePublishedModuleIds } from '@/apostila/data';
 
 function BulletList({ items }: { items: string[] }) {
@@ -40,15 +41,18 @@ export default function MonsterKnowledgeScreen() {
   const { topicId, from, mapNode } = useLocalSearchParams<{ topicId: string; from?: string; mapNode?: string }>();
   const returnToContents = () => {
     if (from === 'map') router.dismissTo({ pathname: '/map', params: { node: mapNode } });
+    else if (from === 'journey') router.replace('/journey');
     else router.replace('/bestiary');
   };
   const { topicById, state } = useApp();
+  const actions = useActions();
   const hasModule = usePublishedModuleIds();
   const { width } = useWindowDimensions();
   const topic = useMemo(() => {
     try { return topicById(topicId); } catch { return null; }
   }, [topicById, topicId]);
   const mastery = topic ? state.masteries[topic.id] : undefined;
+  const confidence = topic ? (state.confidenceRatings ?? []).filter(r => r.topicId === topic.id).at(-1) : undefined;
   const retention = mastery ? calculateRetention(mastery, new Date().toISOString()) : 0;
 
   if (!topic) return <Page narrow><Button title={from === 'map' ? 'Voltar ao mapa' : 'Voltar ao meu bestiário'} variant="secondary" onPress={returnToContents} /><Card><Heading>Não encontramos esse monstro.</Heading><Txt color={c.muted}>Ele pode ter sido removido do catálogo.</Txt></Card></Page>;
@@ -90,6 +94,7 @@ export default function MonsterKnowledgeScreen() {
           : 'Continue praticando para consolidar essa criatura no seu Bestiário.'}
       </Txt>
     </Card>}
+    {mastery?.encountered && <Card><Heading size={22}>Minha confiança neste monstro</Heading><Txt size={13} color={c.muted}>Sua percepção não altera seu desempenho nem o domínio calculado. {confidence ? `Última resposta: ${new Date(confidence.at).toLocaleDateString('pt-BR')}.` : 'Você ainda não informou sua confiança.'}</Txt><View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>{(['low', 'medium', 'high'] as ConfidenceLevel[]).map((level, index) => <Button key={level} title={['Baixa', 'Média', 'Alta'][index]} variant={confidence?.level === level ? 'primary' : 'secondary'} onPress={() => { void actions.rateConfidence(topic.id, level); }} />)}</View></Card>}
     <View style={{ flexDirection: horizontal ? 'row' : 'column', gap: 10 }}><View style={{ flex: 1 }}><Button title="Voltar para minha jornada" onPress={() => router.replace('/')} icon={<ArrowRight size={17} color={c.purple} />} /></View><View style={{ flex: 1 }}><Button title="Ver meu bestiário" variant="secondary" onPress={() => router.replace('/bestiary')} /></View></View>
   </Page>;
 }

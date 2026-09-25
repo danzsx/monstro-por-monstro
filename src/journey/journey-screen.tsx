@@ -1,0 +1,50 @@
+import { useMemo, useState } from 'react';
+import { Pressable, ScrollView, View } from 'react-native';
+import { router } from 'expo-router';
+import { BarChart3, CalendarDays, Footprints } from 'lucide-react-native';
+import { useApp } from '@/data/provider';
+import { Button, Card, Eyebrow, Heading, Page, Pill, Txt } from '@/ui/primitives';
+import { colors as c } from '@/ui/theme';
+import { areaForDiscipline, buildJourney, filterJourney, JourneyEntry, JourneyFilter, localDay, recommendations, totals, weekStart } from './model';
+
+const confidenceLabel = { low: 'Baixa', medium: 'Média', high: 'Alta' };
+const stageLabel = { unseen: 'A descobrir', learning: 'Em aprendizagem', consolidating: 'Consolidando', mastered: 'Dominado', review: 'Em revisão' };
+const dateLabel = (iso: string) => new Date(iso).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+const timeLabel = (ms: number) => ms < 60_000 ? 'menos de 1 min' : `${Math.round(ms / 60_000)} min`;
+const dayLabel = (day: string) => new Date(`${day}T12:00:00`).toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' });
+
+function FilterRow({ values, selected, onSelect, allLabel }: { values: string[]; selected?: string; onSelect: (value?: string) => void; allLabel: string }) {
+  return <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingVertical: 3 }}>
+    {[undefined, ...values].map(value => <Pressable key={value ?? 'all'} accessibilityRole="button" accessibilityState={{ selected: selected === value }} onPress={() => onSelect(value)} style={{ borderRadius: 18, backgroundColor: selected === value ? c.green : c.surface, borderWidth: 1, borderColor: c.line, paddingHorizontal: 16, paddingVertical: 10 }}><Txt size={13} weight="bold" color={c.purple}>{value ?? allLabel}</Txt></Pressable>)}
+  </ScrollView>;
+}
+function EntryCard({ entry, topicName, discipline, currentStage, currentConfidence }: { entry: JourneyEntry; topicName: string; discipline: string; currentStage?: string; currentConfidence?: string }) {
+  const correct = entry.attempts?.filter(a => a.correct).length;
+  return <Card style={{ gap: 12 }}><View style={{ flexDirection: 'row', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}><Eyebrow>{discipline.toUpperCase()} · {dateLabel(entry.completedAt)}</Eyebrow><Pill green>{entry.attempts?.some(a => a.source === 'review') ? 'REVISÃO CONCLUÍDA' : 'BATALHA CONCLUÍDA'}</Pill></View><Heading size={23}>{topicName}</Heading><Txt size={13} color={c.muted}>Desempenho: {entry.attempts ? `${correct} de ${entry.attempts.length} respostas corretas` : 'dados indisponíveis'} · Tempo: {entry.activeMs === undefined ? 'não registrado' : timeLabel(entry.activeMs)}</Txt><Txt size={13} color={c.muted}>Confiança após batalha: {entry.confidence ? confidenceLabel[entry.confidence] : 'não informada'} · Confiança atual: {currentConfidence ?? 'não informada'}</Txt><Txt size={13} color={c.muted}>Ao concluir: {entry.stageAtCompletion ? stageLabel[entry.stageAtCompletion] : 'sem registro'} · Agora: {currentStage ?? 'sem dados'}</Txt><Button title="Ver este monstro" variant="ghost" onPress={() => router.push({ pathname: '/monster', params: { topicId: entry.topicId, from: 'journey' } })} /></Card>;
+}
+export default function JourneyScreen() {
+  const { state, topics } = useApp();
+  const [mode, setMode] = useState<'trail' | 'report'>('trail');
+  const [filter, setFilter] = useState<JourneyFilter>({});
+  const [week, setWeek] = useState(() => weekStart(localDay(new Date().toISOString())));
+  const [openDay, setOpenDay] = useState<string>();
+  const entries = useMemo(() => buildJourney(state), [state]);
+  const visible = useMemo(() => filterJourney(entries, topics, filter), [entries, topics, filter]);
+  const areas = [...new Set(topics.map(t => areaForDiscipline(t.discipline)))].sort();
+  const disciplines = [...new Set(topics.filter(t => !filter.area || areaForDiscipline(t.discipline) === filter.area).map(t => t.discipline))].sort();
+  const filteredTopics = topics.filter(t => (!filter.area || areaForDiscipline(t.discipline) === filter.area) && (!filter.discipline || t.discipline === filter.discipline));
+  const topicById = new Map(topics.map(t => [t.id, t]));
+  const confidenceByTopic = new Map((state.confidenceRatings ?? []).map(r => [r.topicId, r.level]));
+  const weeks = [...new Set([weekStart(localDay(new Date().toISOString())), ...visible.map(e => weekStart(localDay(e.completedAt)))])].sort().reverse();
+  const weekly = visible.filter(e => weekStart(localDay(e.completedAt)) === week);
+  const summary = totals(weekly);
+  const days = [...new Set(weekly.map(e => localDay(e.completedAt)))].sort().reverse();
+  const tips = recommendations(weekly, topics, state.masteries, new Date().toISOString(), visible);
+  return <Page><View style={{ gap: 10 }}><Eyebrow>SEU CAMINHO, PASSO A PASSO</Eyebrow><Heading size={36}>Minha jornada.</Heading><Txt color={c.muted}>Veja o que estudou, como se saiu e o que merece uma nova visita.</Txt></View>
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}><Button title="Trilha visual" variant={mode === 'trail' ? 'primary' : 'secondary'} icon={<Footprints size={17} color={c.purple} />} onPress={() => setMode('trail')} /><Button title="Resumo de estudos" variant={mode === 'report' ? 'primary' : 'secondary'} icon={<BarChart3 size={17} color={c.purple} />} onPress={() => setMode('report')} /></View>
+    <View style={{ gap: 8 }}><Eyebrow>ÁREA</Eyebrow><FilterRow values={areas} selected={filter.area} allLabel="Todas as áreas" onSelect={area => setFilter({ area })} /><Eyebrow>DISCIPLINA</Eyebrow><FilterRow values={disciplines} selected={filter.discipline} allLabel="Todas as disciplinas" onSelect={discipline => setFilter({ area: filter.area, discipline })} /><Eyebrow>MONSTRO</Eyebrow><FilterRow values={filteredTopics.map(t => t.name)} selected={topicById.get(filter.topicId ?? '')?.name} allLabel="Todos os monstros" onSelect={name => setFilter({ ...filter, topicId: filteredTopics.find(t => t.name === name)?.id })} /></View>
+    {mode === 'trail' ? <View style={{ gap: 16 }}><Card style={{ backgroundColor: c.lavender }}><Heading size={22}>{visible.length} {visible.length === 1 ? 'batalha concluída' : 'batalhas concluídas'}</Heading><Txt size={13} color={c.muted}>Cada encontro registra uma etapa. Domínio vem depois de uma revisão bem sucedida.</Txt></Card>{visible.length ? visible.map(entry => <View key={entry.id} style={{ marginLeft: 10, paddingLeft: 20, borderLeftWidth: 2, borderColor: c.green, position: 'relative' }}><View style={{ position: 'absolute', left: -7, top: 27, width: 12, height: 12, borderRadius: 6, backgroundColor: c.greenDark }} /><EntryCard entry={entry} topicName={topicById.get(entry.topicId)?.name ?? entry.topicId} discipline={topicById.get(entry.topicId)?.discipline ?? 'Conteúdo anterior'} currentStage={state.masteries[entry.topicId]?.stage ? stageLabel[state.masteries[entry.topicId].stage] : undefined} currentConfidence={confidenceByTopic.get(entry.topicId) ? confidenceLabel[confidenceByTopic.get(entry.topicId)!] : undefined} /></View>) : <Card><Heading size={22}>Sua trilha começa com uma batalha.</Heading><Txt color={c.muted}>Explorar o mapa ajuda a escolher o caminho; os resultados aparecem aqui depois de praticar.</Txt><Button title="Ir para o início" variant="secondary" onPress={() => router.push('/')} /></Card>}</View> : <View style={{ gap: 16 }}><View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}><CalendarDays size={22} color={c.purple} /><Heading size={22}>Resumo semanal</Heading></View><FilterRow values={weeks.filter(w => w !== weekStart(localDay(new Date().toISOString())))} selected={week === weekStart(localDay(new Date().toISOString())) ? undefined : week} allLabel="Semana atual" onSelect={value => { setWeek(value ?? weekStart(localDay(new Date().toISOString()))); setOpenDay(undefined); }} /><Card style={{ backgroundColor: c.lavender }}><Eyebrow>SEMANA DE {new Date(`${week}T12:00:00`).toLocaleDateString('pt-BR')}</Eyebrow><Heading size={24}>{summary.battles} {summary.battles === 1 ? 'batalha' : 'batalhas'} · {summary.topics} {summary.topics === 1 ? 'conteúdo' : 'conteúdos'}</Heading><Txt>{summary.answered ? `${summary.correct} de ${summary.answered} respostas corretas` : 'Acertos ainda sem dados suficientes'}</Txt><Txt size={13} color={c.muted}>Tempo registrado: {summary.timedBattles ? timeLabel(summary.activeMs) : 'não registrado'}{summary.timedBattles && summary.timedBattles < summary.battles ? ' · algumas batalhas sem tempo registrado' : ''}</Txt></Card>
+      {days.map(day => { const daily = weekly.filter(e => localDay(e.completedAt) === day); const count = totals(daily); return <Card key={day}><Pressable accessibilityRole="button" accessibilityState={{ expanded: openDay === day }} onPress={() => setOpenDay(openDay === day ? undefined : day)}><Txt weight="bold" color={c.purple}>{dayLabel(day)} {openDay === day ? '−' : '+'}</Txt><Txt size={13} color={c.muted}>{count.battles} {count.battles === 1 ? 'batalha' : 'batalhas'} · {count.correct}/{count.answered} acertos · {count.timedBattles ? timeLabel(count.activeMs) : 'tempo não registrado'}</Txt></Pressable>{openDay === day && daily.map(entry => <View key={entry.id} style={{ borderTopWidth: 1, borderColor: c.line, paddingTop: 12, gap: 4 }}><Txt weight="bold">{topicById.get(entry.topicId)?.name ?? entry.topicId}</Txt><Txt size={13} color={c.muted}>{entry.attempts ? `${entry.attempts.filter(a => a.correct).length}/${entry.attempts.length} acertos` : 'desempenho indisponível'} · {entry.activeMs === undefined ? 'tempo não registrado' : timeLabel(entry.activeMs)}</Txt></View>)}</Card>; })}
+      {!weekly.length && <Card><Txt color={c.muted}>Ainda não há batalhas nesta semana e neste filtro.</Txt></Card>}<Card><Heading size={21}>Próximo passo sugerido</Heading>{tips.map(tip => <Txt key={tip}>{tip}</Txt>)}<Txt size={12} color={c.muted}>Sugestões baseadas nas respostas e revisões registradas. Sua confiança declarada não altera a avaliação.</Txt></Card></View>}
+  </Page>;
+}

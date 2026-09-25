@@ -3,7 +3,7 @@ export interface BattleState {
   decision: NextMonsterDecision; plan: BattlePlan;
   phase: 'check-in' | 'barrier' | 'intervention' | 'lesson' | 'question' | 'feedback' | 'repair' | 'complete';
   checkIn?: AffectiveCheckIn; blockIndex: number; questionIndex: number; revealed: boolean;
-  attempts: AttemptEvent[]; startedAt: string;
+  attempts: AttemptEvent[]; startedAt: string; activeMs?: number;
   repaired?: boolean; repairSelection?: number | null;
 }
 export type BattleAction =

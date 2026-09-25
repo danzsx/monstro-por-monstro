@@ -157,7 +157,7 @@ export const physicsQuestions = (id: 'kinematics' | 'newton-laws' | 'calorimetry
   return map[id].map((e, i) => question(id, i, e));
 };
 
-// Chemistry: stoichiometry, solutions
+// Chemistry: stoichiometry, solutions, covalent bonds
 const stoichiometryEntries: Entry[] = [
   ['A Lei da Conservação das Massas (Lavoisier) em recipientes fechados estabelece que:', ['A massa dos produtos é maior que a dos reagentes', 'A massa total dos reagentes é igual à massa total dos produtos', 'Gases não possuem massa', 'O volume sempre se conserva'], 1, 'Na natureza nada se cria, nada se perde, tudo se transforma: a massa total permanece invariável.', enem(2024, 'Azul', 124, 'H24')],
   ['A constante de Avogadro indica que 1 mol de qualquer entidade contém aproximadamente:', ['1000 partículas', '6,02 × 10²³ partículas', '12 partículas', '10⁶ partículas'], 1, '1 mol reúne 6,02 × 10²³ átomos, moléculas ou íons.'],
@@ -200,8 +200,20 @@ const solutionsEntries: Entry[] = [
   ['Qual método físico é utilizado para separar o sal dissolvido da água do mar?', ['Filtração simples', 'Destilação ou evaporação do solvente', 'Decantação estática', 'Peneiração mecânica'], 1, 'Como o sal está dissolvido em escala iônica, a separação exige evaporação ou destilação do solvente.'],
 ];
 
-export const chemistryQuestions = (id: 'stoichiometry' | 'solutions') => {
-  const map = { stoichiometry: stoichiometryEntries, solutions: solutionsEntries };
+const covalentEntries: Entry[] = [
+  ['Na ligação covalente, a união entre os átomos é estabelecida por:', ['Íons que se repelem', 'Pares de elétrons', 'Núcleos que se transformam', 'Elétrons que desaparecem'], 1, 'Ligação covalente ou covalência é a união entre átomos estabelecida por pares de elétrons.'],
+  ['Na representação O=O, os dois átomos de oxigênio compartilham:', ['Um par de elétrons', 'Dois pares de elétrons', 'Três pares de elétrons', 'Nenhum par de elétrons'], 1, 'Dois traços representam dois pares de elétrons compartilhados, isto é, uma ligação dupla.'],
+  ['A fórmula N≡N representa uma ligação:', ['Simples', 'Dupla', 'Tripla', 'Iônica'], 2, 'Os três traços indicam três pares de elétrons compartilhados: uma ligação tripla.'],
+  ['Qual representação é uma fórmula estrutural plana do gás carbônico?', ['H-H', 'H-O-H', 'O=C=O', 'Na⁺ Cl⁻'], 2, 'Na fórmula estrutural plana, os pares covalentes são indicados por traços; no CO₂, há duas ligações duplas.'],
+  ['Na formação de NH₄⁺ a partir de NH₃ e H⁺, o par da nova ligação era inicialmente:', ['Livre no nitrogênio', 'Parte do núcleo do hidrogênio', 'Um par de prótons', 'Inexistente nos reagentes'], 0, 'O NH₃ fornece o par eletrônico livre que o H⁺ passa a compartilhar.'],
+  ['Um composto é considerado molecular quando:', ['Apresenta exclusivamente ligações covalentes', 'Possui pelo menos uma ligação iônica', 'É necessariamente sólido', 'Tem apenas um tipo de átomo'], 0, 'Composto molecular é aquele que apresenta exclusivamente ligações covalentes.'],
+  ['Por que o NaNO₃ é classificado como composto iônico?', ['Porque não há ligações covalentes no nitrato', 'Porque ele possui pelo menos uma ligação iônica', 'Porque todo nitrato é uma molécula isolada', 'Porque o sódio compartilha todos os seus elétrons'], 1, 'Mesmo com ligações covalentes dentro do NO₃⁻, a ligação iônica com Na⁺ faz o composto ser classificado como iônico.'],
+  ['Qual exemplo apresenta menos de 8 elétrons ao redor do átomo central?', ['BeH₂', 'PCl₅', 'SF₆', 'XeF₄'], 0, 'No BeH₂, o livro indica apenas 4 elétrons ao redor do berílio.'],
+  ['Entre átomos iguais, o raio covalente é:', ['O dobro do comprimento da ligação', 'A metade do comprimento da ligação', 'A soma das cargas dos átomos', 'Independente da distância entre os núcleos'], 1, 'O raio covalente r é definido como a metade do comprimento da ligação d: r = d/2.'],
+];
+
+export const chemistryQuestions = (id: 'stoichiometry' | 'solutions' | 'covalent-bonds') => {
+  const map = { stoichiometry: stoichiometryEntries, solutions: solutionsEntries, 'covalent-bonds': covalentEntries };
   return map[id].map((e, i) => question(id, i, e));
 };
 
