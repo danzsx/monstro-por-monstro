@@ -58,7 +58,8 @@
     "build": "expo export --platform web",
     "content:seed": "tsx scripts/export-content.ts",
     "map:check": "tsx scripts/check-map.ts",
-    "apostila:db-check": "tsx scripts/check-interactive-migration.ts"
+    "apostila:db-check": "tsx scripts/check-interactive-migration.ts",
+    "security:db-check": "tsx scripts/check-security-migration.ts"
   },
   "private": true
 }

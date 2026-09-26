@@ -19,11 +19,32 @@ export class StudyStore {
     const next = this.transaction.then(work); this.transaction = next.catch(() => {}); return next;
   }
   async hydrate() {
-    const json = await AsyncStorage.getItem(STORAGE_KEY);
-    if (!json) return;
-    const parsed = JSON.parse(json) as LocalEnvelope;
-    if (parsed.version !== 1 || parsed.state?.version !== 1 || !parsed.state.masteries || !Array.isArray(parsed.pending)) throw new Error('Não foi possível ler este progresso. Os dados foram preservados; não limpe o armazenamento.');
-    this.publish(parsed);
+    try {
+      const json = await AsyncStorage.getItem(STORAGE_KEY);
+      if (!json) return;
+      const parsed = JSON.parse(json) as LocalEnvelope;
+      if (parsed.version !== 1 || parsed.state?.version !== 1 || !parsed.state.masteries || !Array.isArray(parsed.pending)) {
+        throw new Error('Formato de progresso corrompido');
+      }
+      this.publish(parsed);
+    } catch {
+      try {
+        const raw = await AsyncStorage.getItem(STORAGE_KEY);
+        if (raw) await AsyncStorage.setItem(`${STORAGE_KEY}:corrupted:${Date.now()}`, raw);
+        const backup = await AsyncStorage.getItem(`${STORAGE_KEY}:backup:local`);
+        if (backup) {
+          const parsed = JSON.parse(backup) as LocalEnvelope;
+          if (parsed?.state?.masteries) {
+            this.publish(parsed);
+            await AsyncStorage.setItem(STORAGE_KEY, backup);
+            return;
+          }
+        }
+      } catch {}
+      const fallback = initialEnvelope();
+      this.publish(fallback);
+      try { await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(fallback)); } catch {}
+    }
   }
   commit(change: (current: AppState) => AppState, events: SyncEvent[] = []) {
     return this.serial(async () => {
@@ -64,5 +85,13 @@ export class StudyStore {
     const cloud = await remote.load();
     if (!cloud.snapshot) throw new Error('Esta conta ainda não possui progresso salvo.');
     await this.serial(() => this.persist({ version: 1, ownerId, revision: cloud.revision, state: cloud.snapshot!, pending: [], lastSyncAt: new Date().toISOString() }));
+  }
+  async signOutAccount() {
+    await this.transaction;
+    if (this.value.pending.length) {
+      try { await this.sync(); } catch {}
+    }
+    await AsyncStorage.setItem(`${STORAGE_KEY}:backup:${this.value.ownerId ?? 'local'}`, JSON.stringify(this.value));
+    await this.serial(() => this.persist(initialEnvelope()));
   }
 }

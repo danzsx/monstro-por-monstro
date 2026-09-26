@@ -69,8 +69,19 @@ export function ApostilaReader({ module, onBack }: { module: InteractiveModule; 
 export function ApostilaScreen({ topicId, from, mapNode }: { topicId: string; from?: string; mapNode?: string }) {
   const { module, loading, error } = useInteractiveModule(topicId);
   const back = () => {
-    if (from === 'monster') router.dismissTo({ pathname: '/monster', params: { topicId } });
-    else router.dismissTo({ pathname: '/map', params: { node: mapNode || topicId } });
+    if (from === 'monster') {
+      try {
+        router.dismissTo({ pathname: '/monster', params: { topicId } });
+      } catch {
+        router.replace({ pathname: '/monster', params: { topicId } });
+      }
+    } else {
+      try {
+        router.dismissTo({ pathname: '/map', params: { node: mapNode || topicId } });
+      } catch {
+        router.replace({ pathname: '/map', params: { node: mapNode || topicId } });
+      }
+    }
   };
   if (module) return <ApostilaReader key={`${module.topicId}-${module.title}`} module={module} onBack={back} />;
   return <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={{ flexGrow: 1, padding: 24, justifyContent: 'center', alignItems: 'center', gap: 17 }}><View style={{ maxWidth: 540, width: '100%', gap: 17 }}><Button title="Voltar" variant="ghost" onPress={back} />{loading ? <Card><ActivityIndicator color={c.purple} /><Txt>Carregando apostila…</Txt></Card> : <Card><Heading size={25}>Apostila em preparação</Heading><Txt>{error ? 'Não foi possível carregar esta apostila agora. Tente novamente com conexão.' : 'Ainda não há uma apostila publicada para este conteúdo.'}</Txt></Card>}</View></ScrollView>;

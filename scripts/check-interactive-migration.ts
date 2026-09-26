@@ -6,6 +6,7 @@ import { CYTOLOGY_MODULE } from '../src/apostila/cytology';
 const adminId = '11111111-1111-4111-8111-111111111111';
 const studentId = '22222222-2222-4222-8222-222222222222';
 const migration = readFileSync(resolve(__dirname, '../supabase/migrations/20260924042521_interactive_modules.sql'), 'utf8');
+const figureMigration = readFileSync(resolve(__dirname, '../supabase/migrations/20260926123500_flexible_interactive_figures.sql'), 'utf8');
 const db = new PGlite();
 const check = (truth: unknown, message: string) => { if (!truth) throw new Error(message); };
 async function rejects(sql: string, message: string) {
@@ -41,6 +42,7 @@ try {
     insert into public.topics (id, name, published) values ('cytology', 'Citologia', true);
   `);
   await db.exec(migration);
+  await db.exec(figureMigration);
   const rights = await db.query<{ anon_write: boolean; auth_write: boolean }>(`
     select has_table_privilege('anon', 'public.interactive_module_versions', 'insert') as anon_write,
       has_table_privilege('authenticated', 'public.interactive_module_versions', 'insert') as auth_write
@@ -74,16 +76,30 @@ try {
   await role('anon');
   check((await db.query<{ version: number }>('select version from public.interactive_module_versions')).rows[0].version === 1, 'Falha de validação removeu a versão pública.');
   await role('authenticated', adminId);
-  await db.query('update public.interactive_module_versions set content = $1::jsonb where id = $2::uuid', [updated, second.rows[0].id]);
+  const withCustomFigure = JSON.stringify({
+    ...CYTOLOGY_MODULE,
+    title: 'Citologia com figura customizada',
+    sections: [
+      {
+        id: 'sec-custom',
+        title: 'Seção com figura',
+        objective: 'Compreender com figura customizada',
+        blocks: [
+          { id: 'blk-fig', kind: 'figure', title: 'Molécula', caption: 'Estrutura da molécula', figureId: 'covalent-sharing' }
+        ]
+      }
+    ]
+  });
+  await db.query('update public.interactive_module_versions set content = $1::jsonb where id = $2::uuid', [withCustomFigure, second.rows[0].id]);
   await db.query('select public.publish_interactive_module($1::uuid)', [second.rows[0].id]);
   await role('anon');
   const publicSecond = await db.query<{ version: number }>('select version from public.interactive_module_versions');
-  check(publicSecond.rows.length === 1 && publicSecond.rows[0].version === 2, 'Troca de versão não foi atômica.');
+  check(publicSecond.rows.length === 1 && publicSecond.rows[0].version === 2, 'Troca de versão não foi atômica ou rejeitou figura válida.');
   await role('authenticated', adminId);
   await db.query('select public.archive_interactive_module($1::uuid)', [second.rows[0].id]);
   await role('anon');
   check((await db.query('select id from public.interactive_module_versions')).rows.length === 0, 'Versão arquivada ainda está pública.');
-  console.log('Apostilas: migração, grants, RLS, publicação e arquivamento OK.');
+  console.log('Apostilas: migração, grants, RLS, figuras flexíveis, publicação e arquivamento OK.');
 } finally {
   await db.close();
 }

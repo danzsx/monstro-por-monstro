@@ -40,9 +40,17 @@ function EnemCard({ guidance }: { guidance?: EnemGuidance }) {
 export default function MonsterKnowledgeScreen() {
   const { topicId, from, mapNode } = useLocalSearchParams<{ topicId: string; from?: string; mapNode?: string }>();
   const returnToContents = () => {
-    if (from === 'map') router.dismissTo({ pathname: '/map', params: { node: mapNode } });
-    else if (from === 'journey') router.replace('/journey');
-    else router.replace('/bestiary');
+    if (from === 'map') {
+      try {
+        router.dismissTo({ pathname: '/map', params: { node: mapNode } });
+      } catch {
+        router.replace({ pathname: '/map', params: { node: mapNode } });
+      }
+    } else if (from === 'journey') {
+      router.replace('/journey');
+    } else {
+      router.replace('/bestiary');
+    }
   };
   const { topicById, state } = useApp();
   const actions = useActions();

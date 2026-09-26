@@ -43,13 +43,13 @@ describe('inventário e relações do mapa', () => {
 });
 
 describe('vínculos com monstros e progresso', () => {
-  test('vincula os trinta e cinco monstros de Natureza sem fabricar entradas no catálogo', () => {
+  test('vincula os trinta e seis monstros de Natureza sem fabricar entradas no catálogo', () => {
     const masteries = emptyMasteries();
     const before = JSON.stringify(masteries);
     const resolved = MAP_NODES.map(n => resolveNodeState(n, STATIC_TOPICS, masteries));
-    expect(resolved.filter(n => n.topic).map(n => n.topic!.id).sort()).toEqual(['atomic-models', 'biomolecules', 'biotechnology', 'calorimetry', 'cancer', 'cell-division', 'cell-metabolism', 'cell-origin', 'comparative-biology', 'cytology', 'dna-proteins', 'ecology', 'ecosystems', 'electricity', 'electrochemistry', 'embryology', 'evolution', 'genetics', 'human-evolution', 'human-physiology', 'immunity', 'kinematics', 'life-cycles', 'living-beings', 'membrane-transport', 'mutations', 'newton-laws', 'photosynthesis', 'ph-hydrolysis', 'population-genetics', 'solutions', 'stoichiometry', 'taxonomy', 'tissues', 'water-minerals'].sort());
+    expect(resolved.filter(n => n.topic).map(n => n.topic!.id).sort()).toEqual(['atomic-models', 'biomolecules', 'biotechnology', 'calorimetry', 'cancer', 'cell-division', 'cell-metabolism', 'cell-origin', 'comparative-biology', 'covalent-bonds', 'cytology', 'dna-proteins', 'ecology', 'ecosystems', 'electricity', 'electrochemistry', 'embryology', 'evolution', 'genetics', 'human-evolution', 'human-physiology', 'immunity', 'kinematics', 'life-cycles', 'living-beings', 'membrane-transport', 'mutations', 'newton-laws', 'photosynthesis', 'ph-hydrolysis', 'population-genetics', 'solutions', 'stoichiometry', 'taxonomy', 'tissues', 'water-minerals'].sort());
     expect(JSON.stringify(masteries)).toBe(before);
-    expect(STATIC_TOPICS).toHaveLength(38);
+    expect(STATIC_TOPICS).toHaveLength(39);
   });
   test('catálogo vazio, remoção e disciplina incompatível nunca produzem um link', () => {
     const node = NODES_BY_ID.genetics;
