@@ -4,13 +4,18 @@ import { Image } from 'expo-image';
 import { ArrowRight, Check } from 'lucide-react-native';
 import { TopicId } from '@/learning/types';
 import { colors as c, fonts } from './theme';
+import { haptic } from './haptics';
 export function Txt({ children, size = 15, color = c.ink, weight = 'body', style, ...rest }: TextProps & { size?: number; color?: string; weight?: keyof typeof fonts }) {
   return <Text selectable {...rest} style={[{ fontFamily: fonts[weight], fontSize: size, lineHeight: size * 1.48, color }, style]}>{children}</Text>;
 }
 export function Heading({ children, size = 32 }: PropsWithChildren<{ size?: number }>) { return <Txt weight="heading" size={size} color={c.purple} style={{ lineHeight: size * 1.12, letterSpacing: -.8 }} accessibilityRole="header">{children}</Txt>; }
 export function Eyebrow({ children, color = c.muted }: PropsWithChildren<{ color?: string }>) { return <Txt size={11} weight="bold" color={color} style={{ letterSpacing: 2 }}>{children}</Txt>; }
 export function Button({ title, onPress, variant = 'primary', disabled, busy, icon, testID }: { title: string; onPress: () => void; variant?: 'primary' | 'secondary' | 'ghost'; disabled?: boolean; busy?: boolean; icon?: ReactNode; testID?: string }) {
-  return <Pressable testID={testID} accessibilityRole="button" accessibilityLabel={title} accessibilityState={{ disabled: !!disabled || !!busy }} disabled={disabled || busy} onPress={onPress} style={({ pressed, hovered }) => ({ minHeight: 52, paddingHorizontal: 22, paddingVertical: 14, borderRadius: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12, backgroundColor: variant === 'primary' ? c.green : variant === 'secondary' ? c.lavender : 'transparent', opacity: disabled || busy ? .5 : pressed ? .75 : 1, borderWidth: 1, borderColor: hovered ? c.purple : variant === 'secondary' ? c.line : 'transparent' })}>
+  const handlePress = () => {
+    if (variant === 'primary') haptic.impactLight();
+    onPress();
+  };
+  return <Pressable testID={testID} accessibilityRole="button" accessibilityLabel={title} accessibilityState={{ disabled: !!disabled || !!busy }} disabled={disabled || busy} onPress={handlePress} style={({ pressed, hovered }) => ({ minHeight: 52, paddingHorizontal: 22, paddingVertical: 14, borderRadius: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12, backgroundColor: variant === 'primary' ? c.green : variant === 'secondary' ? c.lavender : 'transparent', opacity: disabled || busy ? .5 : pressed ? .75 : 1, borderWidth: 1, borderColor: hovered ? c.purple : variant === 'secondary' ? c.line : 'transparent' })}>
     {busy ? <ActivityIndicator color={c.purple} /> : <><Txt weight="bold" color={c.purple}>{title}</Txt>{icon ?? (variant === 'primary' ? <ArrowRight size={18} color={c.purple} /> : null)}</>}
   </Pressable>;
 }
@@ -24,15 +29,13 @@ const monsters: Record<string, any> = {
   kinematics: require('../../assets/monsters/rule-of-three.png'),
   'newton-laws': require('../../assets/monsters/proportions.png'),
   calorimetry: require('../../assets/monsters/rule-of-three.png'),
+  electricity: require('../../assets/monsters/rule-of-three.png'),
   stoichiometry: require('../../assets/monsters/rule-of-three.png'),
   solutions: require('../../assets/monsters/proportions.png'),
-  ecology: require('../../assets/monsters/cytology.png'),
-  'language-functions': require('../../assets/monsters/genetics.png'),
-  'water-minerals': require('../../assets/monsters/cytology.png'),
-  'membrane-transport': require('../../assets/monsters/cytology.png'),
-  'cell-division': require('../../assets/monsters/genetics.png'),
-  'cell-metabolism': require('../../assets/monsters/cytology.png'),
-  photosynthesis: require('../../assets/monsters/cytology.png'),
+  'covalent-bonds': require('../../assets/monsters/proportions.png'),
+  'atomic-models': require('../../assets/monsters/cytology.png'),
+  'ph-hydrolysis': require('../../assets/monsters/proportions.png'),
+  electrochemistry: require('../../assets/monsters/rule-of-three.png'),
   biomolecules: require('../../assets/monsters/cytology.png'),
   'dna-proteins': require('../../assets/monsters/genetics.png'),
   tissues: require('../../assets/monsters/cytology.png'),
@@ -48,6 +51,16 @@ const monsters: Record<string, any> = {
   'comparative-biology': require('../../assets/monsters/cytology.png'),
   embryology: require('../../assets/monsters/cytology.png'),
   'human-evolution': require('../../assets/monsters/genetics.png'),
+  'water-minerals': require('../../assets/monsters/cytology.png'),
+  'membrane-transport': require('../../assets/monsters/cytology.png'),
+  'cell-division': require('../../assets/monsters/genetics.png'),
+  'cell-metabolism': require('../../assets/monsters/cytology.png'),
+  photosynthesis: require('../../assets/monsters/cytology.png'),
+  ecosystems: require('../../assets/monsters/cytology.png'),
+  'human-physiology': require('../../assets/monsters/cytology.png'),
+  evolution: require('../../assets/monsters/genetics.png'),
+  ecology: require('../../assets/monsters/cytology.png'),
+  'language-functions': require('../../assets/monsters/genetics.png'),
 };
 export function Monster({ id, size = 260, muted = false }: { id: TopicId; size?: number; muted?: boolean }) {
   const source = monsters[id] ?? monsters.proportions;
@@ -59,7 +72,11 @@ export function Page({ children, narrow = false, onActivity }: PropsWithChildren
 }
 export function Progress({ value, label }: { value: number; label: string }) { return <View style={{ gap: 8 }} accessibilityRole="progressbar" accessibilityLabel={label} accessibilityValue={{ min: 0, max: 100, now: Math.round(value * 100) }}><View style={{ height: 7, backgroundColor: c.lavender, borderRadius: 20, overflow: 'hidden' }}><View style={{ height: 7, width: `${Math.min(100, Math.max(0, value * 100))}%`, backgroundColor: c.green, borderRadius: 20 }} /></View></View>; }
 export function Choice({ text, selected, onPress, disabled, index }: { text: string; selected: boolean; onPress: () => void; disabled?: boolean; index?: number }) {
-  return <Pressable accessibilityRole="radio" accessibilityLabel={text} accessibilityState={{ checked: selected, disabled: !!disabled }} disabled={disabled} onPress={onPress} style={({ hovered, pressed }) => ({ padding: 17, minHeight: 56, flexDirection: 'row', gap: 14, alignItems: 'center', borderWidth: 1.5, borderColor: selected || hovered ? c.purple : c.line, backgroundColor: selected ? c.lavender : c.surface, borderRadius: 16, opacity: pressed ? .7 : 1 })}>
+  const handlePress = () => {
+    haptic.selection();
+    onPress();
+  };
+  return <Pressable accessibilityRole="radio" accessibilityLabel={text} accessibilityState={{ checked: selected, disabled: !!disabled }} disabled={disabled} onPress={handlePress} style={({ hovered, pressed }) => ({ padding: 17, minHeight: 56, flexDirection: 'row', gap: 14, alignItems: 'center', borderWidth: 1.5, borderColor: selected || hovered ? c.purple : c.line, backgroundColor: selected ? c.lavender : c.surface, borderRadius: 16, opacity: pressed ? .7 : 1 })}>
     <View style={{ width: 28, height: 28, borderRadius: 9, backgroundColor: selected ? c.purple : c.background, alignItems: 'center', justifyContent: 'center' }}>{selected ? <Check size={16} color="white" /> : <Txt size={12} weight="bold">{index !== undefined ? String.fromCharCode(65 + index) : '○'}</Txt>}</View><Txt style={{ flex: 1 }} weight={selected ? 'bold' : 'body'}>{text}</Txt>
   </Pressable>;
 }

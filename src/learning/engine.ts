@@ -105,12 +105,22 @@ export function updateMastery(previous: TopicMastery, incoming: AttemptEvent[], 
   if (attempts.some(a => a.source === 'review')) return withRetention({ ...base, stage: 'review', nextReviewAt: scheduleReview(now, 0, false), reviewLevel: 0 });
   return withRetention({ ...base, nextReviewAt: undefined });
 }
-export function intervention(checkIn: AffectiveCheckIn, mastery: TopicMastery): string {
+export function intervention(checkIn: AffectiveCheckIn, mastery: TopicMastery, allMasteries?: Masteries): string {
   if (checkIn.feeling === 'confident') return 'Vamos colocar essa confiança em prática. Uma questão por vez.';
   switch (checkIn.barrier) {
     case 'tired': return 'Seu ritmo também importa. Vamos fazer só um cartão e duas questões. Depois, você pode descansar.';
     case 'relevance': return `${topicById(checkIn.topicId).relevance} Vamos experimentar isso em cinco minutos.`;
     case 'history': return mastery.evidence >= 3 && mastery.score >= .65 ? `Nas suas respostas recentes, você acertou cerca de ${Math.round(mastery.score * 100)}%. Há evidência de que você já tem uma base. Vamos usá-la.` : 'Uma tentativa anterior não define a próxima. Vamos rever a base e experimentar duas questões com explicação.';
-    default: return 'Tudo bem não saber ainda. Vamos dividir: uma ideia, um exemplo e duas questões. O primeiro passo cabe em cinco minutos.';
+    default: {
+      if (allMasteries) {
+        const masteredOther = Object.values(allMasteries).find(m => m.topicId !== checkIn.topicId && m.stage === 'mastered');
+        if (masteredOther) {
+          const otherTopic = topicById(masteredOther.topicId);
+          return `Você já dominou ${otherTopic.name}. No começo também parecia desafiador, mas você construiu o domínio passo a passo. Aqui faremos o mesmo: o primeiro passo cabe em cinco minutos.`;
+        }
+      }
+      return 'Tudo bem não saber ainda. Vamos dividir: uma ideia, um exemplo e duas questões. O primeiro passo cabe em cinco minutos.';
+    }
   }
 }
+

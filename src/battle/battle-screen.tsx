@@ -11,10 +11,12 @@ import { useStudyTimer } from '@/journey/use-study-timer';
 import { Button, Card, Choice, Eyebrow, Heading, Page, Pill, Progress, Txt } from '@/ui/primitives';
 import { colors as c } from '@/ui/theme';
 import { useTask } from '@/ui/use-task';
+import { haptic } from '@/ui/haptics';
+import { scheduleSpacedReviewNotifications } from '@/learning/notifications';
 import { BattleMonster } from './battle-monster';
 import { battleHealth } from './battle-health';
 export default function BattleScreen() {
-  const { state, topicById, questionById } = useApp(); const actions = useActions(); const task = useTask();
+  const { state, topics, topicById, questionById } = useApp(); const actions = useActions(); const task = useTask();
   const [choice, setChoice] = useState<number | null>(null);
   const [repairChoice, setRepairChoice] = useState<number | null>(null);
   const [confidence, setConfidence] = useState<ConfidenceLevel | null>(null);
@@ -38,23 +40,29 @@ export default function BattleScreen() {
   const selectBarrier = (barrier: Barrier) => task.run(() => actions.setIntervention({ ...battle.checkIn!, barrier }));
   const result = battle.phase === 'complete' ? updateMastery(mastery, battle.attempts, new Date().toISOString()) : null;
   const complete = (destination: '/bestiary' | '/') => task.run(async () => {
+    haptic.success();
     await timer.flush();
     if (confidence) await actions.rateConfidence(topic.id, confidence, battle.plan.id);
     await actions.finishBattle();
+    void scheduleSpacedReviewNotifications(state.masteries, topics);
     router.replace(destination);
   });
   return <Page narrow onActivity={timer.markActivity}><View style={{ gap: 12 }}><View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}><Eyebrow>{topic.discipline.toUpperCase()} · {battle.plan.estimatedMinutes} MIN</Eyebrow><Pill>{battle.decision.review ? 'REVISÃO' : 'EM APRENDIZAGEM'}</Pill></View><Heading size={29}>{topic.name}</Heading><Progress value={current / steps} label="Progresso da batalha" /></View>
     <View style={{ alignItems: 'center', gap: 4 }}><BattleMonster battle={battle} /><View style={{ width: '100%', maxWidth: 340, gap: 7 }} accessibilityLiveRegion="polite"><View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}><Eyebrow>VIDA DO MONSTRO</Eyebrow><Txt size={12} weight="bold" color={c.purple} style={{ fontVariant: ['tabular-nums'] }}>{Math.round(health * 100)}%</Txt></View><Progress value={health} label="Vida do monstro" /></View></View>
     {battle.phase === 'check-in' && <Card style={{ alignItems: 'center', gap: 20 }}><Heading>Como você está chegando?</Heading><Txt color={c.muted}>A gente ajusta o primeiro passo.</Txt><View style={{ alignSelf: 'stretch', gap: 10 }}>{([{ id: 'confident', label: 'Confiante' }, { id: 'insecure', label: 'Inseguro' }, { id: 'anxious', label: 'Ansioso' }, { id: 'avoid', label: 'Quero evitar' }] as { id: Feeling; label: string }[]).map(f => <Button key={f.id} title={f.label} variant="secondary" disabled={task.busy} onPress={() => selectFeeling(f.id)} />)}</View></Card>}
     {battle.phase === 'barrier' && <Card style={{ gap: 20 }}><Heart size={26} color={c.purple} /><Heading size={28}>O que está pesando mais?</Heading><Txt color={c.muted}>Pode escolher o que mais se aproxima. Essa resposta não muda sua nota.</Txt>{([{ id: 'difficulty', label: 'Parece difícil demais' }, { id: 'tired', label: 'Estou sem energia' }, { id: 'relevance', label: 'Não vejo por que aprender isso' }, { id: 'history', label: 'Já tentei e não consegui' }] as { id: Barrier; label: string }[]).map(b => <Button key={b.id} title={b.label} variant="secondary" disabled={task.busy} onPress={() => selectBarrier(b.id)} />)}</Card>}
-    {battle.phase === 'intervention' && <Card style={{ backgroundColor: c.peach, gap: 22 }}><Leaf size={28} color={c.greenDark} /><Heading>{battle.plan.mode === 'micro' ? 'Tudo bem. Vamos por partes.' : 'Um passo possível para hoje.'}</Heading><Txt size={18}>{intervention(battle.checkIn!, mastery)}</Txt><Pill green>{battle.plan.estimatedMinutes} MINUTOS · NO SEU RITMO</Pill><Txt color={c.muted}>{battle.plan.criteria}</Txt><Button title="Dar o primeiro passo" busy={task.busy} onPress={() => task.run(() => actions.battleAction({ type: 'BEGIN' }))} /></Card>}
+    {battle.phase === 'intervention' && <Card style={{ backgroundColor: c.peach, gap: 22 }}><Leaf size={28} color={c.greenDark} /><Heading>{battle.plan.mode === 'micro' ? 'Tudo bem. Vamos por partes.' : 'Um passo possível para hoje.'}</Heading><Txt size={18}>{intervention(battle.checkIn!, mastery, state.masteries)}</Txt><Pill green>{battle.plan.estimatedMinutes} MINUTOS · NO SEU RITMO</Pill><Txt color={c.muted}>{battle.plan.criteria}</Txt><Button title="Dar o primeiro passo" busy={task.busy} onPress={() => task.run(() => actions.battleAction({ type: 'BEGIN' }))} /></Card>}
     {battle.phase === 'lesson' && <Card style={{ gap: 24 }}><Eyebrow>{block.kind === 'recall' ? 'RECUPERAÇÃO ATIVA' : block.kind === 'example' ? 'VAMOS VER NA PRÁTICA' : 'UMA IDEIA DE CADA VEZ'} · {battle.blockIndex + 1}/{battle.plan.blocks.length}</Eyebrow><Heading size={30}>{block.title}</Heading><Txt size={19} style={{ lineHeight: 31 }}>{block.text}</Txt>{block.formula && <View style={{ backgroundColor: c.lavender, padding: 24, borderRadius: 18 }}><Txt weight="bold" size={22} color={c.purple} style={{ textAlign: 'center' }}>{block.formula}</Txt></View>}{block.kind === 'recall' && <><Txt size={13} color={c.muted}>Tente responder em voz alta ou em um papel antes de revelar.</Txt>{battle.revealed ? <View style={{ padding: 20, backgroundColor: c.softGreen, borderRadius: 16 }}><Txt>{block.reveal}</Txt></View> : <Button title="Já tentei. Ver explicação" variant="secondary" onPress={() => task.run(() => actions.battleAction({ type: 'REVEAL' }))} />}</>}<Button title={battle.blockIndex + 1 === battle.plan.blocks.length ? 'Colocar em prática' : 'Próximo passo'} disabled={block.kind === 'recall' && !battle.revealed} busy={task.busy} onPress={next} /></Card>}
     {['question', 'feedback'].includes(battle.phase) && <Card style={{ gap: 20 }}>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 6 }}>
         <Eyebrow>QUESTÃO {battle.questionIndex + 1} DE {battle.plan.questionIds.length} · SEM CONSULTA</Eyebrow>
         {question.enemMetadata && <Pill green>{formatEnemTag(question.enemMetadata)}</Pill>}
       </View>
-      <Heading size={25}>{question.prompt}</Heading><View style={{ gap: 10 }}>{question.options.map((option, i) => <Choice key={`${question.id}-${i}`} text={option} index={i} selected={battle.phase === 'feedback' ? battle.attempts.at(-1)?.answer === i : choice === i} disabled={battle.phase === 'feedback' || task.busy} onPress={() => setChoice(i)} />)}</View>{battle.phase === 'question' ? <><Button title="Confirmar resposta" disabled={choice === null} busy={task.busy} onPress={() => task.run(() => actions.answerBattle(question.id, choice!))} /><Button title="Ainda não sei" variant="ghost" onPress={() => task.run(() => actions.answerBattle(question.id, -1))} /></> : <><View accessibilityLiveRegion="polite" style={{ padding: 20, gap: 8, borderRadius: 16, backgroundColor: battle.attempts.at(-1)?.correct ? c.softGreen : c.peach }}><Txt weight="bold" color={c.purple}>{battle.attempts.at(-1)?.correct ? 'Isso! Você encontrou a relação.' : 'Vamos entender esse passo.'}</Txt><Txt weight="bold">Resposta: {question.options[question.answer]}</Txt><Txt>{question.explanation}</Txt></View>{battle.attempts.at(-1)?.correct ? <Button title={battle.questionIndex + 1 === battle.plan.questionIds.length ? 'Ver minha conquista' : 'Próxima questão'} busy={task.busy} onPress={next} /> : <View style={{ gap: 10 }}><Button title="Reparar este conceito agora (1 min)" icon={<Sparkles size={17} color={c.purple} />} busy={task.busy} onPress={() => task.run(() => actions.startRepair())} /><Button title={battle.questionIndex + 1 === battle.plan.questionIds.length ? 'Pular e ver conquista' : 'Pular para próxima questão'} variant="ghost" busy={task.busy} onPress={next} /></View>}</>}</Card>}
+      <Heading size={25}>{question.prompt}</Heading><View style={{ gap: 10 }}>{question.options.map((option, i) => <Choice key={`${question.id}-${i}`} text={option} index={i} selected={battle.phase === 'feedback' ? battle.attempts.at(-1)?.answer === i : choice === i} disabled={battle.phase === 'feedback' || task.busy} onPress={() => setChoice(i)} />)}</View>{battle.phase === 'question' ? <><Button title="Confirmar resposta" disabled={choice === null} busy={task.busy} onPress={() => task.run(async () => {
+        const isCorrect = choice === question.answer;
+        if (isCorrect) haptic.success(); else haptic.warning();
+        await actions.answerBattle(question.id, choice!);
+      })} /><Button title="Ainda não sei" variant="ghost" onPress={() => task.run(() => actions.answerBattle(question.id, -1))} /></> : <><View accessibilityLiveRegion="polite" style={{ padding: 20, gap: 8, borderRadius: 16, backgroundColor: battle.attempts.at(-1)?.correct ? c.softGreen : c.peach }}><Txt weight="bold" color={c.purple}>{battle.attempts.at(-1)?.correct ? 'Isso! Você encontrou a relação.' : 'Vamos entender esse passo.'}</Txt><Txt weight="bold">Resposta: {question.options[question.answer]}</Txt><Txt>{question.explanation}</Txt></View>{battle.attempts.at(-1)?.correct ? <Button title={battle.questionIndex + 1 === battle.plan.questionIds.length ? 'Ver minha conquista' : 'Próxima questão'} busy={task.busy} onPress={next} /> : <View style={{ gap: 10 }}><Button title="Reparar este conceito agora (1 min)" icon={<Sparkles size={17} color={c.purple} />} busy={task.busy} onPress={() => task.run(() => actions.startRepair())} /><Button title={battle.questionIndex + 1 === battle.plan.questionIds.length ? 'Pular e ver conquista' : 'Pular para próxima questão'} variant="ghost" busy={task.busy} onPress={next} /></View>}</>}</Card>}
     {battle.phase === 'repair' && (() => {
       const challenge = buildRepairChallenge(question);
       return <Card style={{ backgroundColor: '#FFFDF9', borderColor: c.purple, borderWidth: 1.5, gap: 20 }}>
@@ -97,7 +105,11 @@ export default function BattleScreen() {
               title="Confirmar compreensão"
               disabled={repairChoice === null}
               busy={task.busy}
-              onPress={() => task.run(() => actions.answerRepair(repairChoice === challenge.answer, repairChoice!))}
+              onPress={() => task.run(async () => {
+                const isCorrect = repairChoice === challenge.answer;
+                if (isCorrect) haptic.success();
+                await actions.answerRepair(isCorrect, repairChoice!);
+              })}
             />
             <Button title="Pular reparação" variant="ghost" onPress={next} />
           </View>

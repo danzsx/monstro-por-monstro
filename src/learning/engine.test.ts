@@ -58,6 +58,15 @@ describe('motor de aprendizagem', () => {
     expect(plan.estimatedMinutes).toBe(5); expect(plan.questionIds).toHaveLength(2);
     expect(JSON.stringify(m)).toBe(snapshot); expect(intervention(checkIn, m.proportions)).toContain('cinco minutos');
   });
+  test('intervenção emocional cita monstros já dominados quando há resistência', () => {
+    const m = emptyMasteries();
+    m.proportions = { ...m.proportions, stage: 'mastered', level: 3, score: 1 };
+    m.cytology = { ...m.cytology, stage: 'mastered', level: 3, score: 1 };
+    const checkIn = { topicId: 'genetics' as const, feeling: 'overwhelmed' as const, barrier: 'resistance' as const, at: NOW };
+    const text = intervention(checkIn, m.genetics, m);
+    expect(text).toContain('Você já dominou');
+    expect(text).toMatch(/Razões e proporções|Citologia/);
+  });
   test('prática e revisão usam bancos diferentes', () => {
     const d = selectNextMonster(emptyMasteries(), NOW)!;
     const p = buildBattlePlan('1', d); const r = buildBattlePlan('2', { ...d, review: true });
