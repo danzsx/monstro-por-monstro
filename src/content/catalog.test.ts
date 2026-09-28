@@ -2,8 +2,8 @@ import { STATIC_TOPICS, mergeCatalogs, fetchPublishedCatalog, topicById, formatE
 import { Topic } from '@/learning/types';
 
 describe('Catalog dynamics and merging', () => {
-  test('STATIC_TOPICS contains 39 base topics across all core ENEM disciplines', () => {
-    expect(STATIC_TOPICS).toHaveLength(39);
+  test('STATIC_TOPICS contains 44 base topics across all core ENEM disciplines', () => {
+    expect(STATIC_TOPICS).toHaveLength(44);
     expect(STATIC_TOPICS.map(t => t.id)).toEqual([
       'proportions',
       'rule-of-three',
@@ -37,6 +37,11 @@ describe('Catalog dynamics and merging', () => {
       'cell-metabolism',
       'photosynthesis',
       'ecosystems',
+      'succession',
+      'populations',
+      'biomes',
+      'environmental-impacts',
+      'conservation',
       'human-physiology',
       'evolution',
       'electricity',
@@ -48,7 +53,7 @@ describe('Catalog dynamics and merging', () => {
   });
 
   test('new nature topics include lessons and diagnostic, practice, and review questions', () => {
-    for (const id of ['human-physiology', 'evolution', 'electricity', 'ph-hydrolysis', 'electrochemistry', 'atomic-models', 'ecosystems', 'water-minerals', 'membrane-transport', 'cell-division', 'cell-metabolism', 'photosynthesis', 'biomolecules', 'dna-proteins', 'tissues', 'cell-origin', 'biotechnology', 'immunity', 'cancer', 'mutations', 'population-genetics', 'living-beings', 'taxonomy', 'life-cycles', 'comparative-biology', 'embryology', 'human-evolution'] as const) {
+    for (const id of ['human-physiology', 'evolution', 'electricity', 'ph-hydrolysis', 'electrochemistry', 'atomic-models', 'ecosystems', 'succession', 'populations', 'biomes', 'environmental-impacts', 'conservation', 'water-minerals', 'membrane-transport', 'cell-division', 'cell-metabolism', 'photosynthesis', 'biomolecules', 'dna-proteins', 'tissues', 'cell-origin', 'biotechnology', 'immunity', 'cancer', 'mutations', 'population-genetics', 'living-beings', 'taxonomy', 'life-cycles', 'comparative-biology', 'embryology', 'human-evolution'] as const) {
       const topic = topicById(id, STATIC_TOPICS);
       expect(topic.lessons.length).toBeGreaterThanOrEqual(4);
       expect(topic.questions).toHaveLength(id === 'atomic-models' ? 12 : 9);
@@ -111,7 +116,7 @@ describe('Catalog dynamics and merging', () => {
     };
 
     const merged = mergeCatalogs(STATIC_TOPICS, [customNewTopic]);
-    expect(merged).toHaveLength(40);
+    expect(merged).toHaveLength(45);
     expect(merged.find(t => t.id === 'functions')).toBeDefined();
     expect(merged.find(t => t.id === 'functions')?.name).toBe('Funções Afins');
   });

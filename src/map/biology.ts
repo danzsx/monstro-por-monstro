@@ -33,11 +33,11 @@ export const BIOLOGY_NODES = [
   ...units('bio-ecology', [
     ['ecosystems', 'Bases da ecologia', 'Identifique fatores bióticos e abióticos e diferencie habitat e nicho para compreender como um ecossistema funciona.', [0], 'ecosystems'],
     ['ecology', 'Cadeias e ciclos', 'Conecte cadeias e teias alimentares ao fluxo de energia e à circulação dos elementos nos ciclos biogeoquímicos.', [1, 4], 'ecology'],
-    ['succession', 'Sucessão ecológica', 'Acompanhe mudanças nas comunidades ao longo do tempo e discuta o conceito de clímax e os efeitos de perturbações.', [2]],
-    ['populations', 'Populações e relações', 'Analise crescimento populacional, fatores limitantes e interações como competição, predação e mutualismo.', [3]],
-    ['biomes', 'Biomas e biogeografia', 'Relacione clima, distribuição dos seres vivos e características dos biomas brasileiros.', [5]],
-    ['environmental-impacts', 'Impactos ambientais', 'Investigue uso de recursos, desmatamento, erosão, poluição e mudanças climáticas, articulando causas e efeitos nos ecossistemas.', [6]],
-    ['conservation', 'Conservação e saneamento', 'Compare conservação, recuperação de ecossistemas, proteção da biodiversidade, saneamento e tecnologias ambientais.', [7]],
+    ['succession', 'Sucessão ecológica', 'Acompanhe mudanças nas comunidades ao longo do tempo e discuta o conceito de clímax e os efeitos de perturbações.', [2], 'succession'],
+    ['populations', 'Populações e relações', 'Analise crescimento populacional, fatores limitantes e interações como competição, predação e mutualismo.', [3], 'populations'],
+    ['biomes', 'Biomas e biogeografia', 'Relacione clima, distribuição dos seres vivos e características dos biomas brasileiros.', [5], 'biomes'],
+    ['environmental-impacts', 'Impactos ambientais', 'Investigue uso de recursos, desmatamento, erosão, poluição e mudanças climáticas, articulando causas e efeitos nos ecossistemas.', [6], 'environmental-impacts'],
+    ['conservation', 'Conservação e saneamento', 'Compare conservação, recuperação de ecossistemas, proteção da biodiversidade, saneamento e tecnologias ambientais.', [7], 'conservation'],
     ['environmental-law', 'Ambiente e cidadania', 'Compreenda o papel das normas sobre água, florestas, unidades de conservação e biodiversidade na proteção ambiental.', [8]],
   ]),
   ...units('bio-evolution', [

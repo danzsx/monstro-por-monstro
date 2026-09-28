@@ -43,13 +43,13 @@ describe('inventário e relações do mapa', () => {
 });
 
 describe('vínculos com monstros e progresso', () => {
-  test('vincula os trinta e seis monstros de Natureza sem fabricar entradas no catálogo', () => {
+  test('vincula os quarenta e um monstros de Natureza sem fabricar entradas no catálogo', () => {
     const masteries = emptyMasteries();
     const before = JSON.stringify(masteries);
     const resolved = MAP_NODES.map(n => resolveNodeState(n, STATIC_TOPICS, masteries));
-    expect(resolved.filter(n => n.topic).map(n => n.topic!.id).sort()).toEqual(['atomic-models', 'biomolecules', 'biotechnology', 'calorimetry', 'cancer', 'cell-division', 'cell-metabolism', 'cell-origin', 'comparative-biology', 'covalent-bonds', 'cytology', 'dna-proteins', 'ecology', 'ecosystems', 'electricity', 'electrochemistry', 'embryology', 'evolution', 'genetics', 'human-evolution', 'human-physiology', 'immunity', 'kinematics', 'life-cycles', 'living-beings', 'membrane-transport', 'mutations', 'newton-laws', 'photosynthesis', 'ph-hydrolysis', 'population-genetics', 'solutions', 'stoichiometry', 'taxonomy', 'tissues', 'water-minerals'].sort());
+    expect(resolved.filter(n => n.topic).map(n => n.topic!.id).sort()).toEqual(['atomic-models', 'biomes', 'biomolecules', 'biotechnology', 'calorimetry', 'cancer', 'cell-division', 'cell-metabolism', 'cell-origin', 'comparative-biology', 'conservation', 'covalent-bonds', 'cytology', 'dna-proteins', 'ecology', 'ecosystems', 'electricity', 'electrochemistry', 'embryology', 'environmental-impacts', 'evolution', 'genetics', 'human-evolution', 'human-physiology', 'immunity', 'kinematics', 'life-cycles', 'living-beings', 'membrane-transport', 'mutations', 'newton-laws', 'photosynthesis', 'ph-hydrolysis', 'population-genetics', 'populations', 'solutions', 'stoichiometry', 'succession', 'taxonomy', 'tissues', 'water-minerals'].sort());
     expect(JSON.stringify(masteries)).toBe(before);
-    expect(STATIC_TOPICS).toHaveLength(39);
+    expect(STATIC_TOPICS).toHaveLength(44);
   });
   test('catálogo vazio, remoção e disciplina incompatível nunca produzem um link', () => {
     const node = NODES_BY_ID.genetics;
@@ -60,6 +60,11 @@ describe('vínculos com monstros e progresso', () => {
     expect(resolveNodeState(NODES_BY_ID['biomolecules'], STATIC_TOPICS, {}).topic?.id).toBe('biomolecules');
     expect(resolveNodeState(NODES_BY_ID.immunity, STATIC_TOPICS, {}).topic?.id).toBe('immunity');
     expect(resolveNodeState(NODES_BY_ID.taxonomy, STATIC_TOPICS, {}).topic?.id).toBe('taxonomy');
+    expect(resolveNodeState(NODES_BY_ID.succession, STATIC_TOPICS, {}).topic?.id).toBe('succession');
+    expect(resolveNodeState(NODES_BY_ID.populations, STATIC_TOPICS, {}).topic?.id).toBe('populations');
+    expect(resolveNodeState(NODES_BY_ID.biomes, STATIC_TOPICS, {}).topic?.id).toBe('biomes');
+    expect(resolveNodeState(NODES_BY_ID['environmental-impacts'], STATIC_TOPICS, {}).topic?.id).toBe('environmental-impacts');
+    expect(resolveNodeState(NODES_BY_ID.conservation, STATIC_TOPICS, {}).topic?.id).toBe('conservation');
   });
   test('reutiliza o progresso e identifica revisão vencida', () => {
     const masteries = emptyMasteries();
