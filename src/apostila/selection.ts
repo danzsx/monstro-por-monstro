@@ -1,10 +1,12 @@
 import { CYTOLOGY_MODULE } from './cytology';
 import { COVALENT_BONDS_MODULE } from './covalent-bonds';
+import { GENETICS_MODULE } from './genetics';
 import { parseInteractiveModule, type InteractiveModule } from '../../shared/interactive-module';
 
 export const bundledModule = (topicId: string): InteractiveModule | null => {
   if (topicId === 'cytology') return CYTOLOGY_MODULE;
   if (topicId === 'covalent-bonds') return COVALENT_BONDS_MODULE;
+  if (topicId === 'genetics') return GENETICS_MODULE;
   return null;
 };
 

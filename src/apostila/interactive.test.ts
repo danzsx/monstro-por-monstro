@@ -1,5 +1,6 @@
 import { CYTOLOGY_MODULE } from './cytology';
 import { COVALENT_BONDS_MODULE } from './covalent-bonds';
+import { GENETICS_MODULE } from './genetics';
 import { bundledModule, selectInteractiveModule } from './selection';
 import { describeOsmosis } from './osmosis';
 import { parseInteractiveModule, validateInteractiveModule } from '../../shared/interactive-module';
@@ -13,11 +14,23 @@ test('a apostila autoral tem seis etapas, verificações e formato válido', () 
 test('conteúdo inválido não substitui a apostila incluída no app', () => {
   expect(bundledModule('cytology')).toBe(CYTOLOGY_MODULE);
   expect(bundledModule('covalent-bonds')).toBe(COVALENT_BONDS_MODULE);
+  expect(bundledModule('genetics')).toBe(GENETICS_MODULE);
   expect(selectInteractiveModule('cytology', { schemaVersion: 99 }, true)).toBe(CYTOLOGY_MODULE);
   expect(selectInteractiveModule('covalent-bonds', { schemaVersion: 99 }, true)).toBe(COVALENT_BONDS_MODULE);
+  expect(selectInteractiveModule('genetics', null, false)).toBe(GENETICS_MODULE);
   expect(selectInteractiveModule('cytology', null, false)).toBe(CYTOLOGY_MODULE);
   expect(parseInteractiveModule({ ...CYTOLOGY_MODULE, topicId: 'other' }, 'cytology')).toBeNull();
   expect(selectInteractiveModule('other', CYTOLOGY_MODULE, true)).toBeNull();
+});
+
+test('a aula de genética percorre herança, cruzamentos e limites do modelo com verificações válidas', () => {
+  expect(GENETICS_MODULE.sections).toHaveLength(7);
+  expect(validateInteractiveModule(GENETICS_MODULE, 'genetics')).toEqual([]);
+  expect(GENETICS_MODULE.sections.every(section => section.blocks.some(block => block.kind === 'check'))).toBe(true);
+  const checks = GENETICS_MODULE.sections.flatMap(section => section.blocks.filter(block => block.kind === 'check'));
+  expect(checks).toHaveLength(9);
+  expect(checks.find(block => block.id === 'crosses-check')).toMatchObject({ answer: 1 });
+  expect(checks.find(block => block.id === 'scope-check')).toMatchObject({ answer: 1 });
 });
 
 test('a aula de ligações covalentes mantém o recorte do capítulo e o formato válido', () => {
