@@ -43,13 +43,13 @@ describe('inventário e relações do mapa', () => {
 });
 
 describe('vínculos com monstros e progresso', () => {
-  test('vincula os quarenta e um monstros de Natureza sem fabricar entradas no catálogo', () => {
+  test('vincula os quarenta e nove monstros de Natureza sem fabricar entradas no catálogo', () => {
     const masteries = emptyMasteries();
     const before = JSON.stringify(masteries);
     const resolved = MAP_NODES.map(n => resolveNodeState(n, STATIC_TOPICS, masteries));
-    expect(resolved.filter(n => n.topic).map(n => n.topic!.id).sort()).toEqual(['atomic-models', 'biomes', 'biomolecules', 'biotechnology', 'calorimetry', 'cancer', 'cell-division', 'cell-metabolism', 'cell-origin', 'comparative-biology', 'conservation', 'covalent-bonds', 'cytology', 'dna-proteins', 'ecology', 'ecosystems', 'electricity', 'electrochemistry', 'embryology', 'environmental-impacts', 'evolution', 'genetics', 'human-evolution', 'human-physiology', 'immunity', 'kinematics', 'life-cycles', 'living-beings', 'membrane-transport', 'mutations', 'newton-laws', 'photosynthesis', 'ph-hydrolysis', 'population-genetics', 'populations', 'solutions', 'stoichiometry', 'succession', 'taxonomy', 'tissues', 'water-minerals'].sort());
+    expect(resolved.filter(n => n.topic).map(n => n.topic!.id).sort()).toEqual(['artificial-selection', 'atomic-models', 'biomes', 'biology-methods', 'biomolecules', 'biotechnology', 'calorimetry', 'cancer', 'cell-division', 'cell-metabolism', 'cell-origin', 'comparative-biology', 'conservation', 'covalent-bonds', 'cytology', 'disease-prevention', 'dna-proteins', 'ecology', 'ecosystems', 'electricity', 'electrochemistry', 'embryology', 'environmental-impacts', 'environmental-law', 'evolution', 'genetics', 'health-indicators', 'healthy-life', 'human-evolution', 'human-physiology', 'immunity', 'kinematics', 'life-cycles', 'living-beings', 'membrane-transport', 'mutations', 'newton-laws', 'origin-life', 'photosynthesis', 'ph-hydrolysis', 'population-genetics', 'populations', 'social-health', 'solutions', 'stoichiometry', 'succession', 'taxonomy', 'tissues', 'water-minerals'].sort());
     expect(JSON.stringify(masteries)).toBe(before);
-    expect(STATIC_TOPICS).toHaveLength(44);
+    expect(STATIC_TOPICS).toHaveLength(52);
   });
   test('catálogo vazio, remoção e disciplina incompatível nunca produzem um link', () => {
     const node = NODES_BY_ID.genetics;
