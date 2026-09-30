@@ -21,3 +21,15 @@ test('navega entre etapas sem sair da tela e explica a resposta escolhida', asyn
   await fireEvent.press(view.getByRole('button', { name: 'Etapa anterior' }));
   expect(view.getByText('Boa leitura do problema.')).toBeTruthy();
 }, 15000);
+
+test('modo teoria retoma a etapa salva e deixa perguntas para depois', async () => {
+  const onStepChange = jest.fn();
+  const onComplete = jest.fn();
+  const view = await render(<ApostilaReader module={CYTOLOGY_MODULE} onBack={jest.fn()} study={{ initialStep: 1, onStepChange, onComplete }} />);
+  expect(view.getByRole('header', { name: 'Quem faz o quê?' })).toBeTruthy();
+  expect(view.queryAllByRole('radio')).toHaveLength(0);
+  await fireEvent.press(view.getByRole('tab', { name: `Etapa ${CYTOLOGY_MODULE.sections.length}: ${CYTOLOGY_MODULE.sections.at(-1)!.title}` }));
+  expect(onStepChange).toHaveBeenCalledWith(CYTOLOGY_MODULE.sections.length - 1);
+  await fireEvent.press(view.getByRole('button', { name: 'Concluir teoria e autoexplicar' }));
+  expect(onComplete).toHaveBeenCalledTimes(1);
+});

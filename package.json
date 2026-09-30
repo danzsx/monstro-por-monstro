@@ -59,6 +59,9 @@
     "test": "jest --runInBand",
     "build": "expo export --platform web",
     "content:seed": "tsx scripts/export-content.ts",
+    "content:audit": "tsx scripts/audit-content.ts",
+    "pilot:metrics": "tsx scripts/pilot-metrics.ts",
+    "phase5:evaluate": "tsx scripts/evaluate-phase5.ts",
     "map:check": "tsx scripts/check-map.ts",
     "apostila:db-check": "tsx scripts/check-interactive-migration.ts",
     "security:db-check": "tsx scripts/check-security-migration.ts"

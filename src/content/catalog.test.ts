@@ -1,4 +1,4 @@
-import { STATIC_TOPICS, mergeCatalogs, fetchPublishedCatalog, topicById, formatEnemTag } from './catalog';
+import { STATIC_TOPICS, mergeCatalogs, fetchPublishedCatalog, topicById } from './catalog';
 import { Topic } from '@/learning/types';
 
 describe('Catalog dynamics and merging', () => {
@@ -64,35 +64,34 @@ describe('Catalog dynamics and merging', () => {
     for (const id of ['human-physiology', 'evolution', 'electricity', 'ph-hydrolysis', 'electrochemistry', 'atomic-models', 'ecosystems', 'succession', 'populations', 'biomes', 'environmental-impacts', 'conservation', 'environmental-law', 'biology-methods', 'origin-life', 'artificial-selection', 'health-indicators', 'disease-prevention', 'social-health', 'healthy-life', 'water-minerals', 'membrane-transport', 'cell-division', 'cell-metabolism', 'photosynthesis', 'biomolecules', 'dna-proteins', 'tissues', 'cell-origin', 'biotechnology', 'immunity', 'cancer', 'mutations', 'population-genetics', 'living-beings', 'taxonomy', 'life-cycles', 'comparative-biology', 'embryology', 'human-evolution'] as const) {
       const topic = topicById(id, STATIC_TOPICS);
       expect(topic.lessons.length).toBeGreaterThanOrEqual(4);
-      expect(topic.questions).toHaveLength(id === 'atomic-models' ? 12 : 9);
+      expect(topic.questions).toHaveLength(id === 'atomic-models' ? 14 : 9);
       expect(new Set(topic.questions.map(question => question.purpose))).toEqual(new Set(['diagnostic', 'practice', 'review']));
       expect(topic.questions.every(question => question.topicId === id)).toBe(true);
     }
   });
 
-  test('ecology basics include a bounded ENEM curation and an official exam source', () => {
+  test('ecology basics retain sources while exam guidance awaits review', () => {
     const topic = topicById('ecosystems', STATIC_TOPICS);
     expect(topic.learningContext?.overview).toContain('fatores abióticos');
-    expect(topic.enemGuidance?.status).toBe('reviewed');
+    expect(topic.enemGuidance?.status).toBe('pending');
     expect(topic.enemGuidance?.examsAnalyzed).toContain('ENEM PPL 2023');
     expect(topic.enemGuidance?.sources[0]).toContain('download.inep.gov.br');
     expect(topic.questions).toHaveLength(9);
   });
 
-  test('atomic models include curated ENEM guidance grounded in past items', () => {
+  test('atomic models retain source leads while exam guidance awaits review', () => {
     const topic = topicById('atomic-models', STATIC_TOPICS);
     expect(topic.learningContext?.applications.length).toBeGreaterThanOrEqual(2);
     expect(topic.learningContext?.limitations).toContain('modelo quântico');
-    expect(topic.enemGuidance?.status).toBe('reviewed');
+    expect(topic.enemGuidance?.status).toBe('pending');
     expect(topic.enemGuidance?.examsAnalyzed).toContain('2017 e 2019');
     expect(topic.enemGuidance?.sources).toHaveLength(2);
-    expect(topic.questions).toHaveLength(12);
+    expect(topic.questions).toHaveLength(14);
   });
 
-  test('formatEnemTag correctly generates official INEP tag strings', () => {
-    const qEcology = topicById('ecology', STATIC_TOPICS).questions[0];
-    expect(qEcology.enemMetadata).toBeDefined();
-    expect(formatEnemTag(qEcology.enemMetadata)).toBe('ENEM 2024 · Caderno Azul · Q. 98 · H28');
+  test('locally authored questions do not claim official exam provenance', () => {
+    expect(STATIC_TOPICS.flatMap(topic => topic.questions).every(question => !question.enemMetadata)).toBe(true);
+    expect(STATIC_TOPICS.every(topic => topic.enemGuidance?.status !== 'reviewed')).toBe(true);
   });
 
   test('mergeCatalogs overrides existing and appends new topics', () => {
@@ -148,5 +147,17 @@ describe('Catalog dynamics and merging', () => {
     const merged = mergeCatalogs(STATIC_TOPICS, [{ ...legacyCytology }]);
     expect(topicById('cytology', merged).learningContext?.overview).toBeTruthy();
     expect(topicById('cytology', merged).enemGuidance?.status).toBe('pending');
+  });
+
+  test('pilot question expansion preserves existing IDs and purposes', () => {
+    const covalent = topicById('covalent-bonds', STATIC_TOPICS);
+    const atomic = topicById('atomic-models', STATIC_TOPICS);
+    expect(covalent.questions.filter(q => q.purpose === 'practice')).toHaveLength(5);
+    expect(covalent.questions.filter(q => q.purpose === 'review')).toHaveLength(5);
+    expect(covalent.questions.find(q => q.id === 'covalent-bonds-8')?.purpose).toBe('practice');
+    expect(atomic.questions.filter(q => q.purpose === 'practice')).toHaveLength(5);
+    expect(atomic.questions.filter(q => q.purpose === 'review')).toHaveLength(5);
+    expect(atomic.questions.find(q => q.id === 'atomic-models-4')?.purpose).toBe('practice');
+    expect(atomic.questions.find(q => q.id === 'atomic-models-8')?.purpose).toBe('review');
   });
 });

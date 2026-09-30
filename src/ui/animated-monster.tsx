@@ -4,7 +4,7 @@ import { Monster } from './primitives';
 import { AnimatedMonsterProps, monsterMoodLabels, monsterReactions } from './monster-motion';
 import { useMonsterReaction, useMotionEnabled } from './use-monster-motion';
 
-export function AnimatedMonster({ id, size = 260, mood = 'calm', reaction, active = true }: AnimatedMonsterProps) {
+export function AnimatedMonster({ id, size = 260, mood = 'calm', reaction, active = true, evolved = false }: AnimatedMonsterProps) {
   const enabled = useMotionEnabled(active);
   const { playing, finish } = useMonsterReaction(id, reaction, enabled);
   const [breath] = useState(() => new Animated.Value(0));
@@ -46,7 +46,7 @@ export function AnimatedMonster({ id, size = 260, mood = 'calm', reaction, activ
 
   const profile = playing ? monsterReactions[playing.kind] : undefined;
   const interpolate = (end: number, start = 0) => gesture.interpolate({ inputRange: [0, 1], outputRange: [start, end] });
-  return <View accessible accessibilityRole="image" accessibilityLabel={`Monstro ${id}, ${monsterMoodLabels[mood]}`} style={{ width: size + 24, height: size + 24, alignItems: 'center', justifyContent: 'center' }}>
+  return <View accessible accessibilityRole="image" accessibilityLabel={`Monstro ${id}${evolved ? ', segunda forma' : ''}, ${monsterMoodLabels[mood]}`} style={{ width: size + 24, height: size + 24, alignItems: 'center', justifyContent: 'center' }}>
     <Animated.View style={{ transform: [{ rotate: posture.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '-3deg'] }) }] }}>
       <Animated.View style={{ transform: [
         { translateX: interpolate(profile?.x ?? 0) }, { translateY: interpolate(profile?.y ?? 0) },
@@ -58,7 +58,7 @@ export function AnimatedMonster({ id, size = 260, mood = 'calm', reaction, activ
           { translateY: breath.interpolate({ inputRange: [0, 1], outputRange: [0, mood === 'friendly' ? -2 : 0] }) },
           { rotate: breath.interpolate({ inputRange: [0, 1], outputRange: ['0deg', mood === 'calm' ? '0deg' : '1deg'] }) },
         ] }}>
-          <Monster id={id} size={size} />
+      <Monster id={id} size={size} evolved={evolved} />
         </Animated.View>
       </Animated.View>
     </Animated.View>

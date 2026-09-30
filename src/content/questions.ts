@@ -1,10 +1,10 @@
-import { EnemMetadata, Question, TopicId } from '@/learning/types';
+import { Question, TopicId } from '@/learning/types';
 
-type Entry = [string, string[], number, string, EnemMetadata?];
+type Entry = [string, string[], number, string];
 
 function question(topicId: TopicId, i: number, e: Entry): Question {
   // Rotate alternatives so option position never signals correctness.
-  const [prompt, original, answer, explanation, enemMetadata] = e;
+  const [prompt, original, answer, explanation] = e;
   const shift = i % original.length;
   const options = [...original.slice(shift), ...original.slice(0, shift)];
   return {
@@ -16,42 +16,31 @@ function question(topicId: TopicId, i: number, e: Entry): Question {
     explanation,
     difficulty: (i % 3 + 1) as 1 | 2 | 3,
     purpose: i < 6 ? 'diagnostic' : i < 12 ? 'practice' : 'review',
-    ...(enemMetadata ? { enemMetadata } : {}),
   };
 }
-
-const enem = (year: number, color: string, qNum: number, ability: string, competency?: string): EnemMetadata => ({
-  exam: 'ENEM',
-  year,
-  color,
-  questionNumber: qNum,
-  ability,
-  competency,
-  label: `ENEM ${year} · Caderno ${color} · Q. ${qNum} · ${ability}`,
-});
 
 export function mathQuestions(id: TopicId): Question[] {
   return Array.from({ length: 18 }, (_, i) => {
     const n = i + 2;
     if (id === 'proportions') {
-      if (i % 3 === 0) return question(id, i, [`Uma mistura usa ${n} copos de concentrado e ${n * 3} de água. Qual é a razão concentrado : água?`, ['1 : 3', '3 : 1', '1 : 4', '4 : 1'], 0, `Divida os dois termos por ${n}: 1 : 3. Concentrado : mistura seria 1 : 4. A ordem e as quantidades comparadas importam.`, enem(2023, 'Azul', 136 + (i % 5), 'H11')]);
-      if (i % 3 === 1) return question(id, i, [`Uma receita usa ${n} xícaras de farinha para ${n * 2} porções. Para ${n * 6} porções, quantas xícaras são necessárias?`, [`${n * 2}`, `${n * 3}`, `${n * 6}`, `${n}`], 1, `As porções foram multiplicadas por 3. A farinha também: ${n} × 3 = ${n * 3}.`, enem(2022, 'Amarelo', 142 + (i % 5), 'H12')]);
-      return question(id, i, [`Em um mapa de escala 1 : 1.000, uma distância mede ${n} cm. Quanto isso representa em metros?`, [`${n}`, `${n * 1000}`, `${n * 10}`, `${n * 100}`], 2, `${n} × 1.000 = ${n * 1000} cm. Divida por 100 para converter: ${n * 10} metros.`, enem(2024, 'Cinza', 151 + (i % 5), 'H11')]);
+      if (i % 3 === 0) return question(id, i, [`Uma mistura usa ${n} copos de concentrado e ${n * 3} de água. Qual é a razão concentrado : água?`, ['1 : 3', '3 : 1', '1 : 4', '4 : 1'], 0, `Divida os dois termos por ${n}: 1 : 3. Concentrado : mistura seria 1 : 4. A ordem e as quantidades comparadas importam.`]);
+      if (i % 3 === 1) return question(id, i, [`Uma receita usa ${n} xícaras de farinha para ${n * 2} porções. Para ${n * 6} porções, quantas xícaras são necessárias?`, [`${n * 2}`, `${n * 3}`, `${n * 6}`, `${n}`], 1, `As porções foram multiplicadas por 3. A farinha também: ${n} × 3 = ${n * 3}.`]);
+      return question(id, i, [`Em um mapa de escala 1 : 1.000, uma distância mede ${n} cm. Quanto isso representa em metros?`, [`${n}`, `${n * 1000}`, `${n * 10}`, `${n * 100}`], 2, `${n} × 1.000 = ${n * 1000} cm. Divida por 100 para converter: ${n * 10} metros.`]);
     }
-    if (i % 3 === 0) return question(id, i, [`${n} cadernos custam R$ ${n * 8}. Mantido o preço unitário, quanto custam ${n + 3} cadernos?`, [`R$ ${(n + 3) * 8}`, `R$ ${n * 8 + 3}`, `R$ ${(n + 3) * 4}`, `R$ ${n * 8}`], 0, `Cada caderno custa R$ 8. Quantidade e custo são diretos: ${n + 3} × 8 = ${(n + 3) * 8}.`, enem(2023, 'Azul', 145 + (i % 5), 'H12')]);
-    if (i % 3 === 1) return question(id, i, [`${n} máquinas iguais fazem um lote em 12 horas. Com ${n * 2} máquinas, nas mesmas condições, quanto tempo leva?`, ['24 horas', '6 horas', '12 horas', '3 horas'], 1, 'O número de máquinas dobra e o tempo cai pela metade. São grandezas inversas: 12 ÷ 2 = 6 horas.', enem(2021, 'Rosa', 139 + (i % 5), 'H12')]);
-    return question(id, i, [`Um carro percorre ${n * 60} km em ${n} horas a velocidade constante. Quantos quilômetros percorre em ${n + 2} horas?`, [`${n * 60 + 2}`, `${n * 60}`, `${(n + 2) * 60}`, `${(n + 2) * 30}`], 2, `A velocidade é 60 km/h. Distância e tempo são diretos: 60 × ${n + 2} = ${(n + 2) * 60} km.`, enem(2024, 'Azul', 160 + (i % 5), 'H13')]);
+    if (i % 3 === 0) return question(id, i, [`${n} cadernos custam R$ ${n * 8}. Mantido o preço unitário, quanto custam ${n + 3} cadernos?`, [`R$ ${(n + 3) * 8}`, `R$ ${n * 8 + 3}`, `R$ ${(n + 3) * 4}`, `R$ ${n * 8}`], 0, `Cada caderno custa R$ 8. Quantidade e custo são diretos: ${n + 3} × 8 = ${(n + 3) * 8}.`]);
+    if (i % 3 === 1) return question(id, i, [`${n} máquinas iguais fazem um lote em 12 horas. Com ${n * 2} máquinas, nas mesmas condições, quanto tempo leva?`, ['24 horas', '6 horas', '12 horas', '3 horas'], 1, 'O número de máquinas dobra e o tempo cai pela metade. São grandezas inversas: 12 ÷ 2 = 6 horas.']);
+    return question(id, i, [`Um carro percorre ${n * 60} km em ${n} horas a velocidade constante. Quantos quilômetros percorre em ${n + 2} horas?`, [`${n * 60 + 2}`, `${n * 60}`, `${(n + 2) * 60}`, `${(n + 2) * 30}`], 2, `A velocidade é 60 km/h. Distância e tempo são diretos: 60 × ${n + 2} = ${(n + 2) * 60} km.`]);
   });
 }
 
 const cells: Entry[] = [
-  ['Qual estrutura controla as trocas da célula com o meio?', ['Ribossomo', 'Membrana plasmática', 'Cromossomo', 'Nucléolo'], 1, 'A membrana plasmática possui permeabilidade seletiva.', enem(2023, 'Azul', 94, 'H14')],
+  ['Qual estrutura controla as trocas da célula com o meio?', ['Ribossomo', 'Membrana plasmática', 'Cromossomo', 'Nucléolo'], 1, 'A membrana plasmática possui permeabilidade seletiva.'],
   ['O que caracteriza uma célula procariótica?', ['Não ter DNA', 'Não ter membrana', 'Não ter núcleo delimitado', 'Não produzir proteínas'], 2, 'Procariontes possuem DNA, ribossomos e membrana, mas não núcleo delimitado por envoltório.'],
-  ['Qual organela participa da respiração aeróbia em eucariontes?', ['Mitocôndria', 'Lisossomo', 'Golgi', 'Vacúolo'], 0, 'Mitocôndrias participam da produção de ATP pela respiração celular.', enem(2022, 'Amarelo', 105, 'H15')],
+  ['Qual organela participa da respiração aeróbia em eucariontes?', ['Mitocôndria', 'Lisossomo', 'Golgi', 'Vacúolo'], 0, 'Mitocôndrias participam da produção de ATP pela respiração celular.'],
   ['Onde ocorre a síntese de proteínas?', ['Lisossomos', 'Ribossomos', 'Centríolos', 'Membrana nuclear'], 1, 'Ribossomos traduzem o RNA mensageiro em cadeias de aminoácidos.'],
-  ['Uma célula animal em meio muito concentrado em solutos tende a:', ['Ganhar água', 'Não trocar água', 'Perder água', 'Produzir cloroplastos'], 2, 'Na osmose, a água tende ao meio com maior concentração efetiva de solutos.', enem(2024, 'Cinza', 99, 'H14')],
+  ['Uma célula animal em meio muito concentrado em solutos tende a:', ['Ganhar água', 'Não trocar água', 'Perder água', 'Produzir cloroplastos'], 2, 'Na osmose, a água tende ao meio com maior concentração efetiva de solutos.'],
   ['Qual estrutura existe em bactérias e células animais?', ['Núcleo delimitado', 'Cloroplasto', 'Mitocôndria', 'Ribossomo'], 3, 'Ambas possuem ribossomos. Bactérias não possuem organelas membranosas.'],
-  ['Uma célula secreta muitas proteínas. Qual estrutura deve ser abundante?', ['Retículo endoplasmático rugoso', 'Centríolo', 'Parede celular', 'Cloroplasto'], 0, 'O retículo rugoso possui ribossomos associados à produção de proteínas para secreção e membranas.', enem(2021, 'Azul', 111, 'H15')],
+  ['Uma célula secreta muitas proteínas. Qual estrutura deve ser abundante?', ['Retículo endoplasmático rugoso', 'Centríolo', 'Parede celular', 'Cloroplasto'], 0, 'O retículo rugoso possui ribossomos associados à produção de proteínas para secreção e membranas.'],
   ['Qual estrutura modifica e empacota proteínas para secreção?', ['Mitocôndria', 'Complexo golgiense', 'Nucléolo', 'Centríolo'], 1, 'O complexo golgiense processa e distribui substâncias em vesículas.'],
   ['Mover solutos contra o gradiente exige:', ['Difusão simples', 'Osmose', 'Transporte ativo', 'Difusão facilitada'], 2, 'Transporte ativo utiliza energia para mover substâncias contra o gradiente.'],
   ['Cloroplastos estão associados a qual processo?', ['Digestão', 'Respiração exclusiva', 'Produção bacteriana', 'Fotossíntese'], 3, 'Cloroplastos realizam fotossíntese em plantas e algas. Células vegetais também respiram.'],
@@ -66,11 +55,11 @@ const cells: Entry[] = [
 ];
 
 const genes: Entry[] = [
-  ['Um gene é, simplificadamente:', ['Uma célula', 'Uma região do DNA com informação funcional', 'Uma organela', 'Um tecido'], 1, 'Um gene é uma região do DNA com informação para um produto funcional, como RNA ou proteína.', enem(2023, 'Azul', 119, 'H16')],
+  ['Um gene é, simplificadamente:', ['Uma célula', 'Uma região do DNA com informação funcional', 'Uma organela', 'Um tecido'], 1, 'Um gene é uma região do DNA com informação para um produto funcional, como RNA ou proteína.'],
   ['Alelos são:', ['Células idênticas', 'Organelas', 'Versões de um mesmo gene', 'Proteínas sempre iguais'], 2, 'Alelos são variantes de um gene em um mesmo locus.'],
   ['Qual genótipo é heterozigoto?', ['Aa', 'AA', 'aa', 'Todos'], 0, 'Aa tem dois alelos diferentes; AA e aa são homozigotos.'],
   ['Em Aa × aa, qual proporção esperada é aa?', ['0%', '50%', '75%', '100%'], 1, 'Aa fornece A ou a. aa fornece apenas a. Metade das combinações é aa.'],
-  ['Fenótipo se refere:', ['Só à sequência do DNA', 'Apenas aos gametas', 'Às características observáveis', 'Só ao número de cromossomos'], 2, 'Características observáveis resultam da interação entre genótipo e ambiente.', enem(2024, 'Amarelo', 101, 'H16')],
+  ['Fenótipo se refere:', ['Só à sequência do DNA', 'Apenas aos gametas', 'Às características observáveis', 'Só ao número de cromossomos'], 2, 'Características observáveis resultam da interação entre genótipo e ambiente.'],
   ['Para esse gene, um indivíduo Aa forma gametas:', ['Todos Aa', 'Só AA', 'Só aa', 'A ou a'], 3, 'Os alelos segregam: cada gameta recebe um dos alelos.'],
   ['Em Aa × Aa, qual a chance esperada de AA?', ['25%', '50%', '75%', '100%'], 0, 'As combinações são AA, Aa, aA e aa; uma em quatro é AA.'],
   ['Um alelo dominante:', ['É sempre mais comum', 'Manifesta seu efeito no heterozigoto em dominância completa', 'É sempre benéfico', 'Só existe em homens'], 1, 'Dominância descreve expressão, não frequência nem vantagem.'],
@@ -90,10 +79,10 @@ export const biologyQuestions = (id: 'cytology' | 'genetics') => (id === 'cytolo
 
 // Physics: kinematics, newton-laws, calorimetry
 const kinematicsEntries: Entry[] = [
-  ['Um ônibus percorre 120 km em 2 horas. Qual é a velocidade escalar média?', ['40 km/h', '60 km/h', '80 km/h', '120 km/h'], 1, 'Velocidade média é a razão entre o deslocamento total e o tempo decorrido: 120 / 2 = 60 km/h.', enem(2023, 'Azul', 112, 'H20')],
+  ['Um ônibus percorre 120 km em 2 horas. Qual é a velocidade escalar média?', ['40 km/h', '60 km/h', '80 km/h', '120 km/h'], 1, 'Velocidade média é a razão entre o deslocamento total e o tempo decorrido: 120 / 2 = 60 km/h.'],
   ['Para converter uma velocidade de km/h para m/s, deve-se:', ['Multiplicar por 3,6', 'Dividir por 3,6', 'Multiplicar por 10', 'Dividir por 60'], 1, 'Como 1 km = 1000 m e 1 h = 3600 s, divide-se por 3,6. Exemplo: 72 km/h = 20 m/s.'],
   ['Em um gráfico espaço x tempo (s x t) retilíneo uniforme, a inclinação da reta representa:', ['A aceleração', 'A velocidade', 'A força resultante', 'A energia cinética'], 1, 'No gráfico s x t, a razão delta s / delta t equivale numericamente à velocidade do corpo.'],
-  ['Um corredor percorre 100 metros em 10 segundos. Sua velocidade média em km/h é:', ['10 km/h', '25 km/h', '36 km/h', '45 km/h'], 2, '100 m / 10 s = 10 m/s. Convertendo para km/h: 10 × 3,6 = 36 km/h.', enem(2021, 'Amarelo', 98, 'H17')],
+  ['Um corredor percorre 100 metros em 10 segundos. Sua velocidade média em km/h é:', ['10 km/h', '25 km/h', '36 km/h', '45 km/h'], 2, '100 m / 10 s = 10 m/s. Convertendo para km/h: 10 × 3,6 = 36 km/h.'],
   ['Se um móvel mantém velocidade constante diferente de zero, sua aceleração é:', ['Crescente', 'Nula', 'Igual à velocidade', 'Constante e positiva'], 1, 'Aceleração mede a variação da velocidade no tempo. Se a velocidade não varia, a aceleração é zero.'],
   ['Dois carros partem juntos. Carro A tem v = 80 km/h e Carro B tem v = 100 km/h. Após 2h, a distância entre eles é:', ['20 km', '40 km', '80 km', '180 km'], 1, 'A diferença de velocidade é 20 km/h. Em 2 horas: 20 × 2 = 40 km.'],
   ['Um trem de 200 m de comprimento atravessa uma ponte de 400 m a 20 m/s. O tempo de travessia total é:', ['10 s', '20 s', '30 s', '40 s'], 2, 'O deslocamento total para a travessia completa é 200 + 400 = 600 m. Tempo = 600 / 20 = 30 segundos.'],
@@ -111,10 +100,10 @@ const kinematicsEntries: Entry[] = [
 ];
 
 const newtonEntries: Entry[] = [
-  ['A primeira lei de Newton (Lei da Inércia) afirma que um corpo tende a manter seu estado de repouso ou MRU se:', ['A força resultante for nula', 'A gravidade for zero', 'A velocidade for crescente', 'A massa for nula'], 0, 'Sem força resultante, não há variação de velocidade; o corpo mantém sua inércia.', enem(2024, 'Azul', 119, 'H20')],
+  ['A primeira lei de Newton (Lei da Inércia) afirma que um corpo tende a manter seu estado de repouso ou MRU se:', ['A força resultante for nula', 'A gravidade for zero', 'A velocidade for crescente', 'A massa for nula'], 0, 'Sem força resultante, não há variação de velocidade; o corpo mantém sua inércia.'],
   ['O uso do cinto de segurança em automóveis justifica-se principalmente pelo princípio da:', ['Ação e reação', 'Inércia', 'Conservação de energia térmica', 'Dilatação térmica'], 1, 'Em uma frenagem, os passageiros tendem a continuar em movimento pela inércia de seus corpos.'],
   ['A segunda lei de Newton relaciona força resultante, massa e aceleração pela equação:', ['F = m / a', 'F = m × a', 'F = v / t', 'F = m × g × h'], 1, 'A força resultante aplicada a um corpo é diretamente proporcional à sua aceleração: F = m · a.'],
-  ['Se uma força resultante de 20 N é aplicada a um bloco de 4 kg, a aceleração produzida é:', ['5 m/s²', '16 m/s²', '24 m/s²', '80 m/s²'], 0, 'a = F / m = 20 / 4 = 5 m/s².', enem(2022, 'Azul', 103, 'H20')],
+  ['Se uma força resultante de 20 N é aplicada a um bloco de 4 kg, a aceleração produzida é:', ['5 m/s²', '16 m/s²', '24 m/s²', '80 m/s²'], 0, 'a = F / m = 20 / 4 = 5 m/s².'],
   ['A terceira lei de Newton afirma que o par ação-reação atua:', ['No mesmo corpo e se anula', 'Em corpos diferentes e tem mesma intensidade', 'Em tempos diferentes', 'Com intensidades opostas e desiguais'], 1, 'Ação e reação são forças mútuas aplicadas em corpos distintos; por isso, nunca se anulam mutuamente.'],
   ['A força peso de um corpo na superfície terrestre é calculada por:', ['P = m / g', 'P = m × g', 'P = m × v', 'P = g / m'], 1, 'O peso é a força de atração gravitacional: P = massa × aceleração da gravidade (g).'],
   ['A força normal exercida por uma superfície horizontal sobre um bloco em repouso:', ['É a reação do peso do bloco', 'Equilibra o peso do bloco na vertical', 'Tem intensidade sempre maior que o peso', 'Puxa o bloco para baixo'], 1, 'A normal é força de contato com o piso. Ela equilibra o peso na horizontal, mas a reação do peso atua no centro da Terra.'],
@@ -132,11 +121,11 @@ const newtonEntries: Entry[] = [
 ];
 
 const calorimetryEntries: Entry[] = [
-  ['O calor é definido em Física como:', ['A temperatura interna de um corpo', 'Energia térmica em trânsito devido a uma diferença de temperatura', 'A quantidade de frio armazenada', 'A capacidade de queima de um combustível'], 1, 'Calor é energia em trânsito espontâneo do corpo de maior para o de menor temperatura.', enem(2023, 'Azul', 131, 'H21')],
+  ['O calor é definido em Física como:', ['A temperatura interna de um corpo', 'Energia térmica em trânsito devido a uma diferença de temperatura', 'A quantidade de frio armazenada', 'A capacidade de queima de um combustível'], 1, 'Calor é energia em trânsito espontâneo do corpo de maior para o de menor temperatura.'],
   ['A quantidade de calor sensível necessária para variar a temperatura de uma massa sem mudar de fase é dada por:', ['Q = m × L', 'Q = m × c × delta T', 'Q = P × t', 'Q = C / delta T'], 1, 'Equação fundamental da calorimetria: Q = m · c · delta T.'],
-  ['O calor latente está associado a processos em que ocorre:', ['Aumento contínuo da temperatura', 'Mudança de estado físico a temperatura constante', 'Variação da massa do corpo', 'Transformação de calor em trabalho puro'], 1, 'O calor latente (Q = m · L) promove a quebra/formação de ligações na mudança de fase sem mudar a temperatura.', enem(2022, 'Azul', 92, 'H21')],
+  ['O calor latente está associado a processos em que ocorre:', ['Aumento contínuo da temperatura', 'Mudança de estado físico a temperatura constante', 'Variação da massa do corpo', 'Transformação de calor em trabalho puro'], 1, 'O calor latente (Q = m · L) promove a quebra/formação de ligações na mudança de fase sem mudar a temperatura.'],
   ['A água possui alto calor específico. Isso significa que ela:', ['Aquece e esfria muito rápido', 'Demora mais para aquecer e para esfriar', 'Não consegue absorver calor', 'Evapora instantaneamente'], 1, 'Alto calor específico exige grande quantidade de energia para cada grau de variação térmica.'],
-  ['O fenômeno das brisas marítimas durante o dia decorre de:', ['A terra aquecer mais rápido que o mar devido ao menor calor específico', 'O mar aquecer mais rápido que a terra', 'A ausência de vento no oceano', 'O vapor d água ser mais denso que o solo'], 0, 'A areia/terra tem menor calor específico, aquecendo mais rápido e gerando convecção do mar para a terra.', enem(2019, 'Azul', 116, 'H21')],
+  ['O fenômeno das brisas marítimas durante o dia decorre de:', ['A terra aquecer mais rápido que o mar devido ao menor calor específico', 'O mar aquecer mais rápido que a terra', 'A ausência de vento no oceano', 'O vapor d água ser mais denso que o solo'], 0, 'A areia/terra tem menor calor específico, aquecendo mais rápido e gerando convecção do mar para a terra.'],
   ['Dois corpos a temperaturas diferentes isolados termicamente atingem o equilíbrio térmico quando:', ['Suas massas se tornam iguais', 'Suas temperaturas se igualam', 'A soma das energias é nula', 'O calor latente se esgota'], 1, 'O equilíbrio térmico ocorre quando cessa a troca de calor, ou seja, quando as temperaturas se igualam.'],
   ['A capacidade térmica (C) de um corpo relaciona-se com o calor específico (c) por:', ['C = m / c', 'C = m × c', 'C = c / m', 'C = delta T / m'], 1, 'Capacidade térmica é a propriedade do corpo inteiro: C = massa × calor específico.'],
   ['A transferência de calor que ocorre sem a necessidade de matéria (através do vácuo) é:', ['Condução', 'Convecção', 'Radiação (ou irradiação)', 'Sublimação'], 2, 'A radiação térmica propaga-se por ondas eletromagnéticas (infravermelho), ocorrendo no vácuo.'],
@@ -159,11 +148,11 @@ export const physicsQuestions = (id: 'kinematics' | 'newton-laws' | 'calorimetry
 
 // Chemistry: stoichiometry, solutions, covalent bonds
 const stoichiometryEntries: Entry[] = [
-  ['A Lei da Conservação das Massas (Lavoisier) em recipientes fechados estabelece que:', ['A massa dos produtos é maior que a dos reagentes', 'A massa total dos reagentes é igual à massa total dos produtos', 'Gases não possuem massa', 'O volume sempre se conserva'], 1, 'Na natureza nada se cria, nada se perde, tudo se transforma: a massa total permanece invariável.', enem(2024, 'Azul', 124, 'H24')],
+  ['A Lei da Conservação das Massas (Lavoisier) em recipientes fechados estabelece que:', ['A massa dos produtos é maior que a dos reagentes', 'A massa total dos reagentes é igual à massa total dos produtos', 'Gases não possuem massa', 'O volume sempre se conserva'], 1, 'Na natureza nada se cria, nada se perde, tudo se transforma: a massa total permanece invariável.'],
   ['A constante de Avogadro indica que 1 mol de qualquer entidade contém aproximadamente:', ['1000 partículas', '6,02 × 10²³ partículas', '12 partículas', '10⁶ partículas'], 1, '1 mol reúne 6,02 × 10²³ átomos, moléculas ou íons.'],
   ['Na reação 2 H2 + O2 -> 2 H2O, a proporção em mols entre H2, O2 e H2O é:', ['1 : 1 : 1', '2 : 1 : 2', '2 : 2 : 1', '4 : 2 : 2'], 1, 'Os coeficientes estequiométricos da equação balanceada definem a proporção molar: 2 : 1 : 2.'],
   ['A massa molar da água (H2O, com H=1 e O=16 g/mol) é:', ['17 g/mol', '18 g/mol', '32 g/mol', '34 g/mol'], 1, 'M = 2 × 1 + 16 = 18 g/mol.'],
-  ['Quantos mols de CO2 são produzidos pela queima completa de 1 mol de metano (CH4 + 2 O2 -> CO2 + 2 H2O)?', ['0,5 mol', '1 mol', '2 mols', '4 mols'], 1, 'A proporção molar entre CH4 e CO2 na equação balanceada é de 1 : 1.', enem(2023, 'Azul', 115, 'H24')],
+  ['Quantos mols de CO2 são produzidos pela queima completa de 1 mol de metano (CH4 + 2 O2 -> CO2 + 2 H2O)?', ['0,5 mol', '1 mol', '2 mols', '4 mols'], 1, 'A proporção molar entre CH4 e CO2 na equação balanceada é de 1 : 1.'],
   ['O reagente limitante em uma reação química é aquele que:', ['Sobra no final', 'É consumido primeiro e limita a quantidade máxima de produto', 'Possui menor massa molar sempre', 'Não participa da reação'], 1, 'O reagente em proporção estequiométrica insuficiente se esgota antes, determinando o rendimento da reação.'],
   ['Na síntese da amônia N2 + 3 H2 -> 2 NH3, para reagir com 3 mols de N2 são necessários:', ['1 mol de H2', '3 mols de H2', '6 mols de H2', '9 mols de H2'], 3, 'A proporção molar é de 1 N2 para 3 H2. Para 3 mols de N2: 3 × 3 = 9 mols de H2.'],
   ['Se o rendimento real de uma reação é de 80% do teórico esperado de 50 g, a massa obtida é:', ['30 g', '40 g', '45 g', '50 g'], 1, 'Rendimento = 50 g × 0,80 = 40 gramas produzidas.'],
@@ -180,15 +169,15 @@ const stoichiometryEntries: Entry[] = [
 ];
 
 const solutionsEntries: Entry[] = [
-  ['Em uma solução aquosa de cloreto de sódio (sal de cozinha em água), a água atua como:', ['Soluto', 'Solvente', 'Precipitado', 'Catalisador'], 1, 'Solvente é a substância que dissolve o soluto e costuma estar em maior proporção na fase homogênea.', enem(2023, 'Azul', 102, 'H25')],
+  ['Em uma solução aquosa de cloreto de sódio (sal de cozinha em água), a água atua como:', ['Soluto', 'Solvente', 'Precipitado', 'Catalisador'], 1, 'Solvente é a substância que dissolve o soluto e costuma estar em maior proporção na fase homogênea.'],
   ['A concentração comum (C) de uma solução é a relação entre:', ['Massa do soluto em gramas e volume da solução em litros (g/L)', 'Volume do solvente e massa da solução', 'Número de mols de soluto e peso da Terra', 'Temperatura e pressão'], 0, 'Concentração comum: C = m_soluto / V_solucao (em g/L).'],
   ['Se 20 g de açúcar são dissolvidos em água suficiente para 500 mL (0,5 L) de solução, a concentração é:', ['10 g/L', '20 g/L', '40 g/L', '100 g/L'], 2, 'C = 20 g / 0,5 L = 40 g/L.'],
   ['Na diluição de uma solução pela adição de solvente puro, a quantidade de soluto:', ['Aumenta', 'Permanece constante', 'Diminui', 'Anula-se'], 1, 'Adicionar solvente aumenta o volume e reduz a concentração, mas a massa de soluto dissolvido não varia.'],
-  ['A fórmula fundamental da diluição relacionando concentração inicial e final é:', ['C1 × C2 = V1 × V2', 'C1 × V1 = C2 × V2', 'C1 / V1 = C2 / V2', 'C1 + V1 = C2 + V2'], 1, 'Como m_soluto = C · V se conserva: C1 · V1 = C2 · V2.', enem(2022, 'Amarelo', 118, 'H25')],
+  ['A fórmula fundamental da diluição relacionando concentração inicial e final é:', ['C1 × C2 = V1 × V2', 'C1 × V1 = C2 × V2', 'C1 / V1 = C2 / V2', 'C1 + V1 = C2 + V2'], 1, 'Como m_soluto = C · V se conserva: C1 · V1 = C2 · V2.'],
   ['A concentração molar ou molaridade (M) expressa a quantidade de matéria em:', ['Gramas por litro', 'Mols de soluto por litro de solução (mol/L)', 'Porcentagem de volume', 'Graus Celsius'], 1, 'Molaridade M = n_soluto / V_solucao (em mol/L).'],
   ['Uma solução saturada é aquela que:', ['Ainda pode dissolver mais soluto facilmente', 'Atingiu a quantidade máxima de soluto que o solvente consegue dissolver naquela temperatura', 'Não possui solvente', 'Ferve a 0 °C'], 1, 'Saturação indica que o limite de solubilidade do soluto no solvente naquela temperatura foi alcançado.'],
   ['Se 100 mL de uma solução 2 mol/L são diluídos para 400 mL, a nova concentração molar é:', ['0,5 mol/L', '1 mol/L', '4 mol/L', '8 mol/L'], 0, 'C1 · V1 = C2 · V2 -> 2 × 100 = C2 × 400 -> C2 = 200 / 400 = 0,5 mol/L.'],
-  ['O soro fisiológico comercial é uma solução aquosa de NaCl a aproximadamente:', ['0,9% em massa', '9% em massa', '20% em massa', '0,01% em massa'], 0, 'O soro fisiológico é uma solução isotônica a cerca de 0,9% m/v de NaCl.', enem(2020, 'Azul', 133, 'H25')],
+  ['O soro fisiológico comercial é uma solução aquosa de NaCl a aproximadamente:', ['0,9% em massa', '9% em massa', '20% em massa', '0,01% em massa'], 0, 'O soro fisiológico é uma solução isotônica a cerca de 0,9% m/v de NaCl.'],
   ['Uma mistura homogênea é aquela que apresenta:', ['Duas ou mais fases visíveis', 'Apenas uma única fase uniforme', 'Precipitado no fundo obrigatoriamente', 'Partículas sedimentadas'], 1, 'Soluções verdadeiras são misturas homogêneas monofásicas em escala molecular.'],
   ['O que acontece com a solubilidade da maioria dos sais sólidos em água quando a temperatura aumenta?', ['Diminui', 'Aumenta na maioria dos casos (dissolução endotérmica)', 'Permanece constante', 'Cai a zero'], 1, 'Para a grande maioria dos sais com dissolução endotérmica, o aumento de temperatura eleva o coeficiente de solubilidade.'],
   ['Ao evaporar parte da água de uma solução aquosa de sal sem atingir a saturação:', ['A massa de sal diminui', 'A concentração de sal aumenta', 'O volume aumenta', 'A concentração diminui'], 1, 'A perda de solvente reduz o volume, tornando a solução restante mais concentrada em soluto.'],
@@ -210,20 +199,29 @@ const covalentEntries: Entry[] = [
   ['Por que o NaNO₃ é classificado como composto iônico?', ['Porque não há ligações covalentes no nitrato', 'Porque ele possui pelo menos uma ligação iônica', 'Porque todo nitrato é uma molécula isolada', 'Porque o sódio compartilha todos os seus elétrons'], 1, 'Mesmo com ligações covalentes dentro do NO₃⁻, a ligação iônica com Na⁺ faz o composto ser classificado como iônico.'],
   ['Qual exemplo apresenta menos de 8 elétrons ao redor do átomo central?', ['BeH₂', 'PCl₅', 'SF₆', 'XeF₄'], 0, 'No BeH₂, o livro indica apenas 4 elétrons ao redor do berílio.'],
   ['Entre átomos iguais, o raio covalente é:', ['O dobro do comprimento da ligação', 'A metade do comprimento da ligação', 'A soma das cargas dos átomos', 'Independente da distância entre os núcleos'], 1, 'O raio covalente r é definido como a metade do comprimento da ligação d: r = d/2.'],
+  ['Uma molécula de água tem duas ligações O–H. Cada ligação envolve:', ['Compartilhamento de um par de elétrons', 'Transferência completa de dois prótons', 'Fusão dos núcleos', 'Dois íons metálicos'], 0, 'Cada ligação covalente simples O–H corresponde ao compartilhamento de um par eletrônico.'],
+  ['No metano (CH₄), o carbono faz quatro ligações simples. Quantos pares de elétrons são compartilhados ao todo?', ['Um', 'Dois', 'Quatro', 'Oito'], 2, 'Cada uma das quatro ligações C–H compartilha um par de elétrons; são quatro pares ao todo.'],
+  ['Um estudante desenhou H–H para representar H₂. O traço indica:', ['Um par de elétrons compartilhado', 'Um próton transferido', 'Dois núcleos fundidos', 'Uma ligação iônica'], 0, 'Na fórmula estrutural, cada traço representa um par de elétrons compartilhado.'],
+  ['Ao comparar O₂ e N₂, qual molécula tem mais pares compartilhados entre os dois átomos?', ['O₂, com três', 'N₂, com três', 'Ambas, com um', 'Nenhuma compartilha elétrons'], 1, 'O₂ tem ligação dupla, com dois pares; N₂ tem ligação tripla, com três pares.'],
+  ['A fórmula O=C=O mostra que cada átomo de oxigênio está ligado ao carbono por:', ['Uma ligação dupla', 'Uma ligação simples', 'Uma ligação tripla', 'Uma ligação iônica'], 0, 'Cada sinal de igualdade representa dois pares de elétrons compartilhados, isto é, uma ligação dupla.'],
+  ['Ao formar NH₄⁺ a partir de NH₃ e H⁺, qual átomo fornece inicialmente o par da nova ligação?', ['Hidrogênio', 'Nitrogênio', 'Oxigênio', 'Carbono'], 1, 'O nitrogênio do NH₃ já possui o par livre que é compartilhado com H⁺.'],
+  ['Por que o nitrato de sódio não é classificado como substância molecular simples?', ['Porque há interação iônica entre Na⁺ e NO₃⁻', 'Porque não há nenhuma ligação covalente', 'Porque o sódio é um gás', 'Porque todo nitrato é metálico'], 0, 'Dentro do ânion nitrato há ligações covalentes; entre Na⁺ e NO₃⁻ há interação iônica.'],
 ];
 
 export const chemistryQuestions = (id: 'stoichiometry' | 'solutions' | 'covalent-bonds') => {
   const map = { stoichiometry: stoichiometryEntries, solutions: solutionsEntries, 'covalent-bonds': covalentEntries };
-  return map[id].map((e, i) => question(id, i, e));
+  return map[id].map((e, i) => ({ ...question(id, i, e),
+    ...(id === 'covalent-bonds' && i >= 9 ? { purpose: i < 11 ? 'practice' as const : 'review' as const } : {}),
+  }));
 };
 
 // Ecology: ecology
 const ecologyEntries: Entry[] = [
-  ['Em uma cadeia alimentar típica, os organismos autotróficos fotossintetizantes atuam como:', ['Consumidores primários', 'Produtores', 'Decompositores exclusivos', 'Parasitas'], 1, 'Produtores convertem energia luminosa em energia química, constituindo a base trófica do ecossistema.', enem(2024, 'Azul', 98, 'H28')],
-  ['Ao longo dos níveis tróficos de uma cadeia alimentar, o fluxo de energia é:', ['Cíclico e crescente', 'Unidirecional e decrescente', 'Bidirecional e constante', 'Infinito'], 1, 'A energia dissipa-se como calor em cada nível metabólico (respiração/calor), diminuindo ao longo da cadeia.', enem(2023, 'Azul', 120, 'H29')],
-  ['A bioacumulação ou magnificação trófica de metais pesados (como o mercúrio) atinge maior concentração:', ['Nos produtores', 'Nos consumidores primários', 'Nos consumidores do topo da cadeia', 'Na água pura'], 2, 'Substâncias não biodegradáveis lipossolúveis acumulam-se em tecidos e concentram-se no topo da cadeia trófica.', enem(2022, 'Amarelo', 109, 'H28')],
+  ['Em uma cadeia alimentar típica, os organismos autotróficos fotossintetizantes atuam como:', ['Consumidores primários', 'Produtores', 'Decompositores exclusivos', 'Parasitas'], 1, 'Produtores convertem energia luminosa em energia química, constituindo a base trófica do ecossistema.'],
+  ['Ao longo dos níveis tróficos de uma cadeia alimentar, o fluxo de energia é:', ['Cíclico e crescente', 'Unidirecional e decrescente', 'Bidirecional e constante', 'Infinito'], 1, 'A energia dissipa-se como calor em cada nível metabólico (respiração/calor), diminuindo ao longo da cadeia.'],
+  ['A bioacumulação ou magnificação trófica de metais pesados (como o mercúrio) atinge maior concentração:', ['Nos produtores', 'Nos consumidores primários', 'Nos consumidores do topo da cadeia', 'Na água pura'], 2, 'Substâncias não biodegradáveis lipossolúveis acumulam-se em tecidos e concentram-se no topo da cadeia trófica.'],
   ['No ciclo do carbono, o processo biológico responsável por retirar CO2 da atmosfera é:', ['A respiração celular', 'A fotossíntese', 'A combustão de madeira', 'A decomposição bacteriana'], 1, 'A fotossíntese vegetal e algal fixa o carbono inorgânico do CO2 na forma de matéria orgânica.'],
-  ['A queima de combustíveis fósseis intensifica o efeito estufa principalmente pela liberação de:', ['Oxigênio puro', 'Dióxido de carbono (CO2) e metano (CH4)', 'Nitrogênio inerte', 'Ozônio na estratosfera'], 1, 'Gases do efeito estufa retêm radiação infravermelha na troposfera, elevando a temperatura média global.', enem(2021, 'Azul', 114, 'H29')],
+  ['A queima de combustíveis fósseis intensifica o efeito estufa principalmente pela liberação de:', ['Oxigênio puro', 'Dióxido de carbono (CO2) e metano (CH4)', 'Nitrogênio inerte', 'Ozônio na estratosfera'], 1, 'Gases do efeito estufa retêm radiação infravermelha na troposfera, elevando a temperatura média global.'],
   ['No ciclo do nitrogênio, bactérias do gênero Rhizobium associadas a leguminosas realizam:', ['Desnitrificação', 'Fixação biológica do nitrogênio atmosférico (N2)', 'Fotossíntese profunda', 'Eutrofização direta'], 1, 'Bactérias fixadoras transformam o N2 gasoso em formas nitrogenadas assimiláveis pelas plantas.'],
   ['A eutrofização de corpos d água causada por esgoto ou fertilizantes provoca inicialmente:', ['Morte instantânea de peixes por frio', 'Proliferação explosiva de algas na superfície', 'Seca imediata do lago', 'Diminuição dos nutrientes orgânicos'], 1, 'O excesso de fósforo e nitrogênio causa floração de algas, bloqueando a luz solar para as camadas inferiores.'],
   ['Após a proliferação das algas na eutrofização, a decomposição bacteriana aeróbia leva a:', ['Aumento do oxigênio dissolvido', 'Queda drástica do oxigênio dissolvido e morte de peixes', 'Purificação natural da água', 'Aumento da fotossíntese profunda'], 1, 'Bactérias decompositoras consomem o oxigênio da água, gerando hipóxia/anóxia e mortandade aquática.'],
@@ -629,6 +627,8 @@ const natureExpansionEntries: Record<'human-health' | 'evolution' | 'electricity
     ['Ao derramar água salgada na chama, ela fica amarela. Qual explicação relaciona melhor o fenômeno à estrutura atômica?', ['O sódio excitado emite fótons ao retornar a níveis de menor energia', 'O sal transforma o gás de cozinha em cloro', 'O núcleo do sódio se funde com o oxigênio', 'As proteínas da água passam a emitir elétrons'], 0, 'O calor excita elétrons dos átomos de sódio. Ao retornarem a níveis de menor energia, emitem fótons cuja energia corresponde à luz amarela observada.'],
     ['Ao formar compostos em reações químicas, qual ideia de Dalton continua útil para explicar as proporções entre elementos?', ['Os átomos se combinam em proporções de números inteiros simples', 'Átomos são indivisíveis em qualquer transformação', 'Todos os átomos de um elemento têm sempre a mesma massa', 'Elétrons ocupam órbitas fixas em todos os elementos'], 0, 'A composição dos compostos pode ser descrita por proporções definidas entre átomos. Outros postulados de Dalton foram revistos após a descoberta de partículas subatômicas e isótopos.'],
     ['Uma equipe compara um feixe de partículas antes e depois de atravessar uma lâmina metálica. A maioria passa, mas poucas sofrem grande desvio. Qual conclusão é apoiada por esse resultado?', ['O átomo é majoritariamente vazio e concentra carga positiva num núcleo pequeno', 'A carga positiva está distribuída igualmente por todo o átomo', 'O átomo é uma esfera maciça indivisível', 'Os elétrons ocupam necessariamente níveis de energia quantizados'], 0, 'A passagem da maioria das partículas e o grande desvio de poucas são evidências compatíveis com um núcleo pequeno e positivo, como no modelo de Rutherford.'],
+    ['Em um espectro de emissão, aparecem apenas algumas linhas coloridas. O que esse padrão sugere?', ['Diferenças discretas de energia entre estados eletrônicos', 'Elétrons com qualquer energia possível', 'Ausência de interação com luz', 'Núcleos sem carga'], 0, 'Linhas específicas correspondem a fótons com energias determinadas pelas diferenças entre estados eletrônicos.'],
+    ['Um átomo absorve um fóton e um elétron passa a um estado de maior energia. O processo descrito é:', ['Excitação eletrônica', 'Fusão nuclear', 'Emissão de fóton', 'Formação obrigatória de nêutron'], 0, 'Na excitação, a energia absorvida permite ao elétron ocupar um estado de maior energia.'],
   ],
   'human-health': [
     ['Qual sistema transporta oxigênio e nutrientes pelo corpo?', ['Digestório', 'Circulatório', 'Excretor', 'Endócrino'], 1, 'O sistema circulatório distribui gases, nutrientes, hormônios e resíduos pelo organismo.'],
@@ -692,16 +692,18 @@ export function natureExpansionQuestions(id: keyof typeof natureExpansionEntries
   const sectionSize = Math.ceil(entries.length / 3);
   return entries.map((entry, index) => ({
     ...question(topicId, index, entry),
-    purpose: index < sectionSize ? 'diagnostic' : index < sectionSize * 2 ? 'practice' : 'review',
+    purpose: id === 'atomic-models' && index >= 12 ? (index === 12 ? 'practice' : 'review')
+      : index < (id === 'atomic-models' ? 4 : sectionSize) ? 'diagnostic'
+        : index < (id === 'atomic-models' ? 8 : sectionSize * 2) ? 'practice' : 'review',
   }));
 }
 
 // Languages: language-functions
 const languageEntries: Entry[] = [
-  ['A função emotiva (ou expressiva) da linguagem destaca-se pelo foco:', ['No destinatário com ordens', 'No próprio emissor, em seus sentimentos, opiniões e marcas de 1ª pessoa', 'No código linguístico como dicionários', 'Apenas no canal de comunicação'], 1, 'A função emotiva evidencia a subjetividade e a emoção do locutor (eu, verbos na primeira pessoa, exclamações).', enem(2024, 'Azul', 15, 'H18')],
-  ['A função apelativa (ou conativa), muito comum em peças publicitárias e discursos persuasivos, tem foco:', ['No emissor lírico', 'No receptor (ou interlocutor), usando vocativos e verbos no imperativo', 'Na metalinguagem formal', 'Na rima poética'], 1, 'A função apelativa busca influenciar, persuadir ou ordenar o destinatário ("Compre", "Vote", "Faça").', enem(2023, 'Azul', 22, 'H19')],
-  ['A função referencial (ou denotativa) prioriza a clareza e a transmissão objetiva de informações, com foco:', ['No contexto (ou referente)', 'Na sonoridade das palavras', 'No humor ambíguo', 'No canal físico'], 0, 'Predomina em notícias jornalísticas, artigos científicos e manuais informativos sem juízo de valor pessoal.', enem(2022, 'Azul', 38, 'H21')],
-  ['A função metalinguística ocorre quando a linguagem é usada para:', ['Testar se o microfone está ligado', 'Explicar ou refletir sobre o próprio código linguístico', 'Criticar pessoas famosas', 'Emocionar o leitor com rimas'], 1, 'Metalinguagem é o código falando do código (um poema sobre o ato de escrever, um dicionário, um filme sobre cinema).', enem(2021, 'Azul', 8, 'H18')],
+  ['A função emotiva (ou expressiva) da linguagem destaca-se pelo foco:', ['No destinatário com ordens', 'No próprio emissor, em seus sentimentos, opiniões e marcas de 1ª pessoa', 'No código linguístico como dicionários', 'Apenas no canal de comunicação'], 1, 'A função emotiva evidencia a subjetividade e a emoção do locutor (eu, verbos na primeira pessoa, exclamações).'],
+  ['A função apelativa (ou conativa), muito comum em peças publicitárias e discursos persuasivos, tem foco:', ['No emissor lírico', 'No receptor (ou interlocutor), usando vocativos e verbos no imperativo', 'Na metalinguagem formal', 'Na rima poética'], 1, 'A função apelativa busca influenciar, persuadir ou ordenar o destinatário ("Compre", "Vote", "Faça").'],
+  ['A função referencial (ou denotativa) prioriza a clareza e a transmissão objetiva de informações, com foco:', ['No contexto (ou referente)', 'Na sonoridade das palavras', 'No humor ambíguo', 'No canal físico'], 0, 'Predomina em notícias jornalísticas, artigos científicos e manuais informativos sem juízo de valor pessoal.'],
+  ['A função metalinguística ocorre quando a linguagem é usada para:', ['Testar se o microfone está ligado', 'Explicar ou refletir sobre o próprio código linguístico', 'Criticar pessoas famosas', 'Emocionar o leitor com rimas'], 1, 'Metalinguagem é o código falando do código (um poema sobre o ato de escrever, um dicionário, um filme sobre cinema).'],
   ['A função fática tem como objetivo principal:', ['Transmitir dados estatísticos precisos', 'Estabelecer, testar, prolongar ou interromper o contato com o interlocutor', 'Convencer o eleitor a votar', 'Criar metáforas estéticas'], 1, 'Foco no canal ("Alô?", "Entende?", "Boa tarde", "Você está me ouvindo?").'],
   ['A função poética valoriza a elaboração artística da mensagem, enfatizando:', ['A velocidade da fala', 'A forma, o ritmo, as rimas e os efeitos estéticos do texto', 'Apenas informações científicas', 'A ausência de figuras de linguagem'], 1, 'Foco na própria mensagem, explorando sonoridades, imagens e metáforas (na literatura e na publicidade criativa).'],
   ['O uso de termos técnicos e linguagem denotativa e impessoal em um artigo da revista Nature exemplifica a função:', ['Emotiva', 'Referencial', 'Fática', 'Apelativa'], 1, 'Artigos científicos priorizam objetividade e clareza informativa sem sentimentalismos.'],

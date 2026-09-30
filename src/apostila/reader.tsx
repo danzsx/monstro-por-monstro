@@ -30,9 +30,9 @@ function ModuleCard({ block, selected, onSelect }: { block: ModuleBlock; selecte
   }
 }
 
-export function ApostilaReader({ module, onBack }: { module: InteractiveModule; onBack: () => void }) {
+export function ApostilaReader({ module, onBack, study }: { module: InteractiveModule; onBack: () => void; study?: { initialStep?: number; onStepChange: (index: number) => void; onComplete: () => void; busy?: boolean } }) {
   const { width } = useWindowDimensions();
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState(() => Math.max(0, Math.min(study?.initialStep ?? 0, module.sections.length - 1)));
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const scroll = useRef<ScrollView>(null);
   const section = module.sections[step];
@@ -43,27 +43,29 @@ export function ApostilaReader({ module, onBack }: { module: InteractiveModule; 
     if (!node) return [];
     return relationsFor(node.id).after.map(edge => edge.to).slice(0, 3);
   }, [module.topicId]);
-  const go = (index: number) => { setStep(index); scroll.current?.scrollTo({ y: 0, animated: false }); };
-  return <ScrollView ref={scroll} contentInsetAdjustmentBehavior="automatic" style={{ backgroundColor: c.background }} contentContainerStyle={{ padding: width < 700 ? 19 : 38, paddingBottom: 45 }}>
+  const go = (index: number) => { setStep(index); study?.onStepChange(index); scroll.current?.scrollTo({ y: 0, animated: false }); };
+  const content = (
     <View style={{ width: '100%', maxWidth: 920, alignSelf: 'center', gap: 23 }}>
       <Pressable accessibilityRole="button" accessibilityLabel="Voltar da apostila" onPress={onBack} style={{ alignSelf: 'flex-start', minHeight: 44, flexDirection: 'row', gap: 7, alignItems: 'center' }}><ArrowLeft size={17} color={c.purple} /><Txt size={13} weight="bold" color={c.purple}>Voltar</Txt></Pressable>
       <View style={{ padding: width < 700 ? 22 : 32, borderRadius: 26, backgroundColor: c.peach, flexDirection: width >= 740 ? 'row' : 'column', alignItems: 'center', gap: 15 }}>
         <View style={{ flex: 1, gap: 9 }}><Eyebrow color={c.purple}>APOSTILA INTERATIVA · UM PASSO DE CADA VEZ</Eyebrow><Heading size={width < 700 ? 30 : 38}>{module.title}</Heading><Txt size={14} style={{ lineHeight: 23 }}>{module.intro}</Txt></View>
-        {module.topicId === 'cytology' && <Monster id="cytology" size={width < 700 ? 130 : 170} />}
+        {!study && module.topicId === 'cytology' && <Monster id="cytology" size={width < 700 ? 130 : 170} />}
       </View>
       <View style={{ gap: 10 }}><View style={{ flexDirection: 'row', justifyContent: 'space-between' }}><Txt size={12} weight="bold" color={c.purple}>ETAPA {step + 1} DE {module.sections.length}</Txt><Txt size={12} color={c.muted}>{Math.round(((step + 1) / module.sections.length) * 100)}% explorado</Txt></View><Progress value={(step + 1) / module.sections.length} label="Etapas exploradas nesta visita" /></View>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} accessibilityRole="tablist" contentContainerStyle={{ gap: 8, paddingVertical: 3 }}>
         {module.sections.map((item, index) => <Pressable key={item.id} accessibilityRole="tab" accessibilityLabel={`Etapa ${index + 1}: ${item.title}`} accessibilityState={{ selected: step === index }} onPress={() => go(index)} style={{ minHeight: 48, justifyContent: 'center', borderRadius: 14, borderWidth: 1, borderColor: step === index ? c.purple : c.line, backgroundColor: step === index ? c.lavender : c.surface, paddingHorizontal: 14 }}><Txt size={13} weight="bold" color={c.purple}>{index + 1}. {item.title}</Txt></Pressable>)}
       </ScrollView>
       <View style={{ gap: 10 }}><Eyebrow color={c.greenDark}>SEU FOCO AGORA</Eyebrow><Heading size={29}>{section.title}</Heading><Txt size={15} color={c.muted}>{section.objective}</Txt></View>
-      <View style={{ gap: 15 }}>{section.blocks.map(block => <ModuleCard key={block.id} block={block} selected={answers[block.id]} onSelect={answer => setAnswers(previous => ({ ...previous, [block.id]: answer }))} />)}</View>
+      {study && <Txt size={13} color={c.muted}>Este é seu momento de teoria. Explore as explicações e figuras; as questões vêm depois.</Txt>}
+      <View style={{ gap: 15 }}>{section.blocks.filter(block => !study || block.kind !== 'check').map(block => <ModuleCard key={block.id} block={block} selected={answers[block.id]} onSelect={answer => setAnswers(previous => ({ ...previous, [block.id]: answer }))} />)}</View>
       <View style={{ flexDirection: width >= 600 ? 'row' : 'column', gap: 10 }}>
         {step > 0 && <View style={{ flex: 1 }}><Button title="Etapa anterior" variant="secondary" onPress={() => go(step - 1)} /></View>}
         {step < module.sections.length - 1 && <View style={{ flex: 1 }}><Button title="Próxima etapa" onPress={() => go(step + 1)} /></View>}
       </View>
-      {step === module.sections.length - 1 && <Card style={{ backgroundColor: c.softGreen }}><View style={{ flexDirection: 'row', alignItems: 'center', gap: 9 }}><BookOpen size={20} color={c.greenDark} /><Heading size={22}>Você abriu novos caminhos.</Heading></View><Txt size={14}>Estas perguntas ajudam a pensar. O domínio do monstro é construído nas batalhas e revisões.</Txt><Button title="Voltar ao mapa" onPress={() => router.push({ pathname: '/map', params: { node: currentMapNode } })} variant="secondary" />{related.length > 0 && <View style={{ gap: 8 }}><Txt size={12} weight="bold" color={c.purple}>CONTINUE EXPLORANDO</Txt>{related.filter(id => NODES_BY_ID[id]).map(id => <Pressable key={id} accessibilityRole="button" accessibilityLabel={`Abrir ${NODES_BY_ID[id].title} no mapa`} onPress={() => router.push({ pathname: '/map', params: { node: id } })} style={{ minHeight: 44, backgroundColor: c.surface, borderRadius: 12, padding: 12, flexDirection: 'row', alignItems: 'center', gap: 8 }}><MapPinned size={16} color={c.purple} /><Txt size={13} weight="bold" color={c.purple} style={{ flex: 1 }}>{NODES_BY_ID[id].title}</Txt><ArrowRight size={16} color={c.purple} /></Pressable>)}</View>}</Card>}
+      {step === module.sections.length - 1 && (study ? <Card style={{ backgroundColor: c.softGreen }}><Heading size={22}>Teoria estudada.</Heading><Txt>Agora você pode organizar o que aprendeu com suas palavras.</Txt><Button title="Concluir teoria e autoexplicar" busy={study.busy} onPress={study.onComplete} /></Card> : <Card style={{ backgroundColor: c.softGreen }}><View style={{ flexDirection: 'row', alignItems: 'center', gap: 9 }}><BookOpen size={20} color={c.greenDark} /><Heading size={22}>Você abriu novos caminhos.</Heading></View><Txt size={14}>Estas perguntas ajudam a pensar. O domínio do monstro é construído nas batalhas e revisões.</Txt><Button title="Voltar ao mapa" onPress={() => router.push({ pathname: '/map', params: { node: currentMapNode } })} variant="secondary" />{related.length > 0 && <View style={{ gap: 8 }}><Txt size={12} weight="bold" color={c.purple}>CONTINUE EXPLORANDO</Txt>{related.filter(id => NODES_BY_ID[id]).map(id => <Pressable key={id} accessibilityRole="button" accessibilityLabel={`Abrir ${NODES_BY_ID[id].title} no mapa`} onPress={() => router.push({ pathname: '/map', params: { node: id } })} style={{ minHeight: 44, backgroundColor: c.surface, borderRadius: 12, padding: 12, flexDirection: 'row', alignItems: 'center', gap: 8 }}><MapPinned size={16} color={c.purple} /><Txt size={13} weight="bold" color={c.purple} style={{ flex: 1 }}>{NODES_BY_ID[id].title}</Txt><ArrowRight size={16} color={c.purple} /></Pressable>)}</View>}</Card>)}
     </View>
-  </ScrollView>;
+  );
+  return study ? content : <ScrollView ref={scroll} contentInsetAdjustmentBehavior="automatic" style={{ backgroundColor: c.background }} contentContainerStyle={{ padding: width < 700 ? 19 : 38, paddingBottom: 45 }}>{content}</ScrollView>;
 }
 
 export function ApostilaScreen({ topicId, from, mapNode }: { topicId: string; from?: string; mapNode?: string }) {

@@ -11,6 +11,7 @@ export interface AnimatedMonsterProps {
   mood?: MonsterMood;
   reaction?: MonsterReaction;
   active?: boolean;
+  evolved?: boolean;
 }
 export const monsterMoodLabels: Record<MonsterMood, string> = {
   calm: 'tranquilo', ready: 'pronto para o desafio', friendly: 'amigável',

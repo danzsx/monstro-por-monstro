@@ -11,7 +11,9 @@ function initial(): BattleState {
 test('acolhimento é calmo; ler e revelar não disparam ataques', () => {
   const state = initial();
   expect(battleMotion(state)).toEqual({ mood: 'calm' });
-  const lesson = battleReducer(state, { type: 'BEGIN' });
+  const choice = battleReducer(state, { type: 'BEGIN' });
+  expect(battleMotion(choice)).toEqual({ mood: 'calm' });
+  const lesson = battleReducer(choice, { type: 'CHOOSE_SOURCE', source: 'internal', label: 'Material do app', at });
   expect(battleMotion(lesson)).toEqual({ mood: 'ready' });
   expect(battleMotion(battleReducer(lesson, { type: 'REVEAL' }))).toEqual({ mood: 'ready' });
 });

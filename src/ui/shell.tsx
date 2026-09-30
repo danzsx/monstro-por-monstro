@@ -11,7 +11,7 @@ function Logo() { return <View style={{ gap: 0 }}><Txt weight="heading" size={29
 export function Shell({ children }: PropsWithChildren) {
   const { width } = useWindowDimensions(); const wide = width >= 1000; const path = usePathname(); const insets = useSafeAreaInsets();
   const { state, online, error, syncError, cloudConfigured } = useApp();
-  const study = path === '/battle' || path === '/diagnostic' || path === '/onboarding' || path === '/apostila';
+  const study = path === '/entry' || path === '/entry-prototype' || path === '/battle' || path === '/diagnostic' || path === '/onboarding' || path === '/apostila';
   const items = nav.map(({ href, label, short, Icon }) => {
     const active = path === href;
     return <Link key={href} href={href} asChild><Pressable accessibilityRole="link" accessibilityLabel={label} style={{ flex: wide ? undefined : 1, flexDirection: wide ? 'row' : 'column', gap: wide ? 12 : 4, alignItems: 'center', padding: wide ? 15 : 9, borderRadius: 14, backgroundColor: active ? c.lavender : 'transparent' }}><Icon size={wide ? 19 : 21} color={active ? c.purple : c.muted} strokeWidth={active ? 2.2 : 1.6} /><Txt size={wide ? 13 : 10} weight={active ? 'bold' : 'medium'} color={active ? c.purple : c.muted}>{wide ? label : short}</Txt></Pressable></Link>;

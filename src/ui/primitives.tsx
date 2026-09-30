@@ -1,4 +1,4 @@
-import { PropsWithChildren, ReactNode } from 'react';
+import { PropsWithChildren, ReactNode, RefObject } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, Text, TextProps, View, ViewStyle, useWindowDimensions } from 'react-native';
 import { Image } from 'expo-image';
 import { ArrowRight, Check } from 'lucide-react-native';
@@ -75,13 +75,19 @@ const monsters: Record<string, any> = {
   ecology: require('../../assets/monsters/cytology.png'),
   'language-functions': require('../../assets/monsters/genetics.png'),
 };
-export function Monster({ id, size = 260, muted = false }: { id: TopicId; size?: number; muted?: boolean }) {
-  const source = monsters[id] ?? monsters.proportions;
-  return <Image source={source} contentFit="contain" accessibilityLabel={`Monstro ${id}`} style={{ width: size, height: size, opacity: muted ? .32 : 1 }} />;
+const evolvedMonsters: Partial<Record<TopicId, number>> = {
+  proportions: require('../../assets/monsters/proportions-evolved.png'),
+  'rule-of-three': require('../../assets/monsters/rule-of-three-evolved.png'),
+  cytology: require('../../assets/monsters/cytology-evolved.png'),
+  genetics: require('../../assets/monsters/genetics-evolved.png'),
+};
+export function Monster({ id, size = 260, muted = false, evolved = false }: { id: TopicId; size?: number; muted?: boolean; evolved?: boolean }) {
+  const source = evolved && evolvedMonsters[id] ? evolvedMonsters[id] : monsters[id] ?? monsters.proportions;
+  return <Image source={source} contentFit="contain" accessibilityLabel={`Monstro ${id}${evolved && evolvedMonsters[id] ? ', segunda forma' : ''}`} style={{ width: size, height: size, opacity: muted ? .32 : 1 }} />;
 }
-export function Page({ children, narrow = false, onActivity }: PropsWithChildren<{ narrow?: boolean; onActivity?: () => void }>) {
+export function Page({ children, narrow = false, onActivity, scrollRef }: PropsWithChildren<{ narrow?: boolean; onActivity?: () => void; scrollRef?: RefObject<ScrollView | null> }>) {
   const { width } = useWindowDimensions();
-  return <ScrollView contentInsetAdjustmentBehavior="automatic" onTouchStart={onActivity} onScroll={onActivity} scrollEventThrottle={1000} contentContainerStyle={{ padding: width < 700 ? 22 : 44, paddingBottom: 36, flexGrow: 1 }} style={{ backgroundColor: c.background }}><View style={{ width: '100%', maxWidth: narrow ? 760 : 1160, alignSelf: 'center', gap: 28 }}>{children}</View></ScrollView>;
+  return <ScrollView ref={scrollRef} contentInsetAdjustmentBehavior="automatic" onTouchStart={onActivity} onScroll={onActivity} scrollEventThrottle={1000} contentContainerStyle={{ padding: width < 700 ? 22 : 44, paddingBottom: 36, flexGrow: 1 }} style={{ backgroundColor: c.background }}><View style={{ width: '100%', maxWidth: narrow ? 760 : 1160, alignSelf: 'center', gap: 28 }}>{children}</View></ScrollView>;
 }
 export function Progress({ value, label }: { value: number; label: string }) { return <View style={{ gap: 8 }} accessibilityRole="progressbar" accessibilityLabel={label} accessibilityValue={{ min: 0, max: 100, now: Math.round(value * 100) }}><View style={{ height: 7, backgroundColor: c.lavender, borderRadius: 20, overflow: 'hidden' }}><View style={{ height: 7, width: `${Math.min(100, Math.max(0, value * 100))}%`, backgroundColor: c.green, borderRadius: 20 }} /></View></View>; }
 export function Choice({ text, selected, onPress, disabled, index }: { text: string; selected: boolean; onPress: () => void; disabled?: boolean; index?: number }) {

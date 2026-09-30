@@ -1,7 +1,7 @@
 import { supabase } from '@/auth/client';
 import { CloudRepository, SnapshotReply } from './outbox';
 import { AppState } from './state';
-export const remote: CloudRepository = {
+export const remote: CloudRepository & { deleteMine(): Promise<void> } = {
   async load(): Promise<SnapshotReply> {
     if (!supabase) throw new Error('Nuvem indisponível.');
     const { data, error } = await supabase.from('student_snapshots').select('revision,snapshot').maybeSingle();
@@ -16,5 +16,10 @@ export const remote: CloudRepository = {
       throw error;
     }
     return data as number;
+  },
+  async deleteMine() {
+    if (!supabase) throw new Error('Nuvem indisponível.');
+    const { error } = await supabase.rpc('delete_my_study_data');
+    if (error) throw error;
   },
 };

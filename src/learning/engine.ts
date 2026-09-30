@@ -1,5 +1,7 @@
 import { TOPICS, TOPIC_IDS, topicById } from '@/content/catalog';
-import { AffectiveCheckIn, AttemptEvent, BattlePlan, Masteries, NextMonsterDecision, TopicId, TopicMastery } from './types';
+import { AffectiveCheckIn, AttemptEvent, BattlePlan, Masteries, NextMonsterDecision, Question, Topic, TopicId, TopicMastery } from './types';
+import { usableQuestions } from './recommendation';
+import { approvedExamQuestions, isEvolutionPilot } from './evolution';
 export const DAY = 86_400_000;
 export function emptyMasteries(): Masteries {
   return Object.fromEntries(TOPIC_IDS.map(topicId => [topicId, { topicId, score: 0, evidence: 0, encountered: false, stage: 'unseen', reviewLevel: 0 }])) as Masteries;
@@ -9,7 +11,8 @@ export function scheduleReview(at: string, level: number, passed = true): string
   return new Date(Date.parse(at) + days * DAY).toISOString();
 }
 export function prerequisitesMet(id: TopicId, masteries: Masteries): boolean {
-  return topicById(id).prerequisiteIds.every(p => masteries[p] && masteries[p].evidence >= 3 && masteries[p].score >= .65);
+  return topicById(id).prerequisiteIds.every(p => masteries[p] && (isEvolutionPilot(p)
+    ? !!masteries[p].firstClearedAt : masteries[p].evidence >= 3 && masteries[p].score >= .65));
 }
 export function calculateRetention(m: TopicMastery, now: string): number {
   if (!m.encountered || m.stage === 'unseen') return 0;
@@ -58,7 +61,8 @@ export function selectNextMonster(masteries: Masteries, now: string, active?: To
   }
   const candidates = TOPICS.filter(t => prerequisitesMet(t.id, masteries)).filter(t => {
     const m = masteries[t.id] ?? { topicId: t.id, score: 0, evidence: 0, encountered: false, stage: 'unseen', reviewLevel: 0 };
-    return !m.nextReviewAt || isDue(m, now);
+    const purpose = isDue(m, now) ? 'review' : 'practice';
+    return (!m.nextReviewAt || isDue(m, now)) && t.questions.some(q => q.purpose === purpose);
   }).map(t => {
     const m = masteries[t.id] ?? { topicId: t.id, score: 0, evidence: 0, encountered: false, stage: 'unseen', reviewLevel: 0 };
     const due = isDue(m, now);
@@ -77,23 +81,33 @@ export function selectNextMonster(masteries: Masteries, now: string, active?: To
   });
   return candidates.sort((a, b) => b.score - a.score || a.topicId.localeCompare(b.topicId))[0] ?? null;
 }
-export function buildBattlePlan(id: string, decision: NextMonsterDecision, checkIn?: AffectiveCheckIn, forceMicro = false, attempts: AttemptEvent[] = []): BattlePlan {
-  const topic = topicById(decision.topicId);
-  const micro = forceMicro || !!checkIn && checkIn.feeling !== 'confident';
-  const mode = micro ? 'micro' : decision.review ? 'review' : 'learn';
-  const pool = topic.questions.filter(q => q.purpose === (decision.review ? 'review' : 'practice'));
+export function buildBattlePlan(id: string, decision: NextMonsterDecision, checkIn?: AffectiveCheckIn, forceMicro = false, attempts: AttemptEvent[] = [], catalog: Topic[] = TOPICS, firstCleared = false): BattlePlan {
+  const topic = topicById(decision.topicId, catalog);
+  const exam = decision.suggestedMode === 'exam';
+  const micro = !exam && forceMicro;
+  const mode = exam ? 'exam' : micro ? 'micro' : decision.review ? 'review' : 'learn';
+  const pool = exam ? approvedExamQuestions(topic.questions) : usableQuestions(topic, decision.review ? 'review' : 'practice');
   const useCount = (qid: string) => attempts.filter(a => a.questionId === qid).length;
-  const questions = [...pool].sort((a, b) => useCount(a.id) - useCount(b.id) || a.id.localeCompare(b.id)).slice(0, micro ? 2 : 5);
-  const microBlocks = topic.lessons.length <= 2 ? topic.lessons : [topic.lessons[0], topic.lessons[Math.min(3, topic.lessons.length - 1)]].filter(Boolean);
-  return { id, topicId: topic.id, mode, estimatedMinutes: micro ? 5 : decision.review ? 10 : 15,
-    blocks: decision.review ? [] : micro ? microBlocks : topic.lessons,
-    questionIds: questions.map(q => q.id), criteria: micro ? 'Dar o primeiro passo e praticar duas questões.' : 'Recuperar o conteúdo e resolver cinco questões sem ajuda.' };
+  const questions = [...pool].sort((a, b) => useCount(a.id) - useCount(b.id) || a.id.localeCompare(b.id))
+    .slice(0, exam ? 2 : micro ? 1 : mode === 'learn' && isEvolutionPilot(topic.id) && !firstCleared ? 3 : 5);
+  const recall = topic.lessons.find(block => block.kind === 'recall');
+  const theory = topic.lessons.filter(block => block.kind !== 'recall');
+  const summaries = theory.filter(block => block.kind === 'summary' || block.kind === 'review');
+  return { id, topicId: topic.id, mode, version: 2, evolutionVersion: 1, contentVersion: topic.version, estimatedMinutes: micro ? 5 : exam || decision.review ? 10 : 15,
+    blocks: decision.review || exam ? [] : micro ? theory.slice(0, 2) : theory,
+    miniReview: summaries.length ? summaries : theory.filter(block => block.kind === 'concept').slice(0, 2),
+    recallPrompt: recall ? { title: recall.title, text: recall.text, reveal: recall.reveal } : { title: 'Lembre com suas palavras', text: `Explique uma ideia central de ${topic.name} sem consultar o material.` },
+    questionIds: questions.map(q => q.id), questionSnapshots: questions.map(q => ({ ...q, version: q.version ?? topic.version })),
+    criteria: exam ? 'Responder duas questões oficiais do ENEM sem consulta e conferir as explicações.' : decision.review ? `Responder ${questions.length} ${questions.length === 1 ? 'questão de revisão' : 'questões de revisão'}.` : `Estudar a teoria, explicar com suas palavras, fazer uma mini revisão e responder ${questions.length} ${questions.length === 1 ? 'questão de fixação' : 'questões de fixação'}.` };
+}
+export function questionForPlan(plan: BattlePlan, id: string, lookup: (id: string) => Question): Question {
+  return plan.questionSnapshots?.find(question => question.id === id) ?? lookup(id);
 }
 export function updateMastery(previous: TopicMastery, incoming: AttemptEvent[], now: string): TopicMastery {
-  const attempts = [...new Map(incoming.filter(a => a.topicId === previous.topicId).map(a => [a.questionId, a])).values()];
+  const attempts = [...new Map(incoming.filter(a => a.topicId === previous.topicId && (a.source === 'practice' || a.source === 'review') && a.correct !== null).map(a => [a.questionId, a])).values()];
   if (!attempts.length) return previous;
   const evidence = [...new Map([...(previous.assessmentEvidence ?? []), ...attempts].map(a => [a.questionId, a])).values()];
-  const independent = evidence.filter(a => !a.assisted);
+  const independent = evidence.filter(a => !a.assisted && (a.source === 'practice' || a.source === 'review') && a.correct !== null);
   const accuracy = independent.length ? independent.filter(a => a.correct).length / independent.length : 0;
   const score = previous.evidence ? previous.score * .35 + accuracy * .65 : accuracy;
   const passed = independent.length >= 5 && accuracy >= .8;
@@ -106,11 +120,11 @@ export function updateMastery(previous: TopicMastery, incoming: AttemptEvent[], 
   return withRetention({ ...base, nextReviewAt: undefined });
 }
 export function intervention(checkIn: AffectiveCheckIn, mastery: TopicMastery, allMasteries?: Masteries): string {
-  if (checkIn.feeling === 'confident') return 'Vamos colocar essa confiança em prática. Uma questão por vez.';
+  if (checkIn.feeling === 'confident') return 'Vamos aproveitar essa disposição para conhecer a teoria. Você escolhe a aula e segue no seu ritmo.';
   switch (checkIn.barrier) {
-    case 'tired': return 'Seu ritmo também importa. Vamos fazer só um cartão e duas questões. Depois, você pode descansar.';
+    case 'tired': return 'Seu ritmo também importa. Comece pela leitura ou por uma aula e pause quando precisar.';
     case 'relevance': return `${topicById(checkIn.topicId).relevance} Vamos experimentar isso em cinco minutos.`;
-    case 'history': return mastery.evidence >= 3 && mastery.score >= .65 ? `Nas suas respostas recentes, você acertou cerca de ${Math.round(mastery.score * 100)}%. Há evidência de que você já tem uma base. Vamos usá-la.` : 'Uma tentativa anterior não define a próxima. Vamos rever a base e experimentar duas questões com explicação.';
+    case 'history': return mastery.evidence >= 3 && mastery.score >= .65 ? 'Suas tentativas anteriores mostram que você já construiu uma base. Vamos retomá-la em um passo possível.' : 'Uma tentativa anterior não define a próxima. Vamos rever a base com uma aula no seu ritmo.';
     default: {
       if (allMasteries) {
         const masteredOther = Object.values(allMasteries).find(m => m.topicId !== checkIn.topicId && m.stage === 'mastered');
@@ -119,8 +133,7 @@ export function intervention(checkIn: AffectiveCheckIn, mastery: TopicMastery, a
           return `Você já dominou ${otherTopic.name}. No começo também parecia desafiador, mas você construiu o domínio passo a passo. Aqui faremos o mesmo: o primeiro passo cabe em cinco minutos.`;
         }
       }
-      return 'Tudo bem não saber ainda. Vamos dividir: uma ideia, um exemplo e duas questões. O primeiro passo cabe em cinco minutos.';
+      return 'Tudo bem não saber ainda. Comece conhecendo a teoria, sem precisar resolver nada agora. Você pode escolher um primeiro passo de cinco minutos.';
     }
   }
 }
-

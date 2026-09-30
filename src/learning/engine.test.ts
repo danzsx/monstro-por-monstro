@@ -1,4 +1,4 @@
-import { buildBattlePlan, buildRepairChallenge, calculateRetention, DAY, effectiveScore, emptyMasteries, intervention, isDue, prerequisitesMet, scheduleReview, selectNextMonster, updateMastery } from './engine';
+import { buildBattlePlan, buildRepairChallenge, calculateRetention, DAY, effectiveScore, emptyMasteries, intervention, isDue, prerequisitesMet, questionForPlan, scheduleReview, selectNextMonster, updateMastery } from './engine';
 import { evaluateDiagnostic, nextDiagnosticQuestion, DIAGNOSTIC_GATEWAY_IDS } from '@/diagnostic/engine';
 import { TOPICS, questionById } from '@/content/catalog';
 import { AttemptEvent, TopicId } from './types';
@@ -15,6 +15,8 @@ describe('motor de aprendizagem', () => {
     expect(first).not.toBeNull();
     expect(prerequisitesMet(first!.topicId, m)).toBe(true);
     m.proportions = { ...m.proportions, score: .8, evidence: 3 };
+    expect(prerequisitesMet('rule-of-three', m)).toBe(false);
+    m.proportions.firstClearedAt = NOW;
     expect(prerequisitesMet('rule-of-three', m)).toBe(true);
   });
   test('acertos imediatos não bastam; revisão após 24h concede domínio', () => {
@@ -51,11 +53,13 @@ describe('motor de aprendizagem', () => {
   test('preserva uma batalha ativa apesar de outras prioridades', () => {
     expect(selectNextMonster(emptyMasteries(), NOW, 'cytology')?.topicId).toBe('cytology');
   });
-  test('ansiedade encurta a batalha e não altera domínio', () => {
+  test('ansiedade preserva a teoria e o tempo escolhido sem alterar domínio', () => {
     const m = emptyMasteries(); const snapshot = JSON.stringify(m); const decision = selectNextMonster(m, NOW)!;
     const checkIn = { topicId: decision.topicId, feeling: 'anxious' as const, barrier: 'difficulty' as const, at: NOW };
     const plan = buildBattlePlan('1', decision, checkIn);
-    expect(plan.estimatedMinutes).toBe(5); expect(plan.questionIds).toHaveLength(2);
+    expect(plan.estimatedMinutes).toBe(15); expect(plan.questionIds).toHaveLength(3); expect(plan.blocks.length).toBeGreaterThan(0);
+    const short = buildBattlePlan('short', decision, checkIn, true);
+    expect(short.estimatedMinutes).toBe(5); expect(short.questionIds).toHaveLength(1); expect(short.blocks.length).toBeGreaterThan(0);
     expect(JSON.stringify(m)).toBe(snapshot); expect(intervention(checkIn, m.proportions)).toContain('cinco minutos');
   });
   test('intervenção emocional cita monstros já dominados quando há resistência', () => {
@@ -72,6 +76,14 @@ describe('motor de aprendizagem', () => {
     const p = buildBattlePlan('1', d); const r = buildBattlePlan('2', { ...d, review: true });
     expect(p.questionIds.every(id => questionById(id).purpose === 'practice')).toBe(true);
     expect(r.questionIds.every(id => questionById(id).purpose === 'review')).toBe(true);
+  });
+  test('questão da sessão permanece estável após mudança do catálogo remoto', () => {
+    const d = selectNextMonster(emptyMasteries(), NOW)!;
+    const plan = buildBattlePlan('versioned', d);
+    const snapshot = plan.questionSnapshots![0];
+    expect(snapshot.version).toBe(plan.contentVersion);
+    const changedLookup = () => ({ ...snapshot, prompt: 'Outro enunciado', answer: (snapshot.answer + 1) % snapshot.options.length, version: 99 });
+    expect(questionForPlan(plan, snapshot.id, changedLookup)).toEqual(snapshot);
   });
   test('retorna vazio quando não há conteúdo elegível ou revisão vencida', () => {
     const m = emptyMasteries(); for (const t of TOPICS) m[t.id] = { ...m[t.id], score: 1, evidence: 5, stage: 'mastered', nextReviewAt: later(3) };
@@ -98,26 +110,25 @@ describe('motor de aprendizagem', () => {
     expect(challenge.insight).toBe(q.explanation);
   });
 });
-describe('diagnóstico adaptativo', () => {
+describe('diagnóstico opcional de familiaridade', () => {
   function simulate(correct: (n: number) => boolean) {
     const result: AttemptEvent[] = [];
     for (let i = 0; i < 25; i++) { const q = nextDiagnosticQuestion(result); if (!q) break; result.push({ id: String(i), questionId: q.id, topicId: q.topicId, answer: correct(i) ? q.answer : -1, correct: correct(i), assisted: false, source: 'diagnostic', at: NOW }); }
     return result;
   }
-  test('termina em 12–20 questões, sem repetições, e distingue perfis', () => {
+  test('oferece uma pergunta por tópico e não converte autorrelatos legados em domínio', () => {
     for (const profile of [() => true, () => false, (n: number) => n % 2 === 0]) {
-      const a = simulate(profile); expect(a.length).toBeGreaterThanOrEqual(12); expect(a.length).toBeLessThanOrEqual(20);
+      const a = simulate(profile); expect(a).toHaveLength(4);
       expect(new Set(a.map(a => a.questionId)).size).toBe(a.length);
       const evalMap = evaluateDiagnostic(a);
-      for (const id of DIAGNOSTIC_GATEWAY_IDS) expect(evalMap[id].evidence).toBeGreaterThanOrEqual(3);
+      for (const id of DIAGNOSTIC_GATEWAY_IDS) { expect(evalMap[id].evidence).toBe(0); expect(evalMap[id].score).toBe(0); }
     }
-    expect(evaluateDiagnostic(simulate(() => true)).proportions.score).toBe(1);
-    expect(evaluateDiagnostic(simulate(() => false)).proportions.score).toBe(0);
     expect(evaluateDiagnostic(simulate(() => true)).proportions.stage).toBe('unseen');
   });
-  test('escolhe dificuldades distintas após acerto ou erro', () => {
-    const a = simulate(() => true); const b = simulate(() => false);
-    expect(a.map(a => a.questionId)).not.toEqual(b.map(a => a.questionId));
+  test('pode ser interrompido e retomado sem repetir tópico', () => {
+    const first = simulate(() => true).slice(0, 2);
+    expect(nextDiagnosticQuestion(first)?.topicId).toBe('cytology');
+    expect(nextDiagnosticQuestion(simulate(() => true))).toBeNull();
   });
 });
 test('catálogo editorial íntegro e sem alternativas duplicadas', () => {

@@ -6,5 +6,9 @@ export function newEvents(previous: AppState, next: AppState): SyncEvent[] {
   const attempts: SyncEvent[] = all.filter(a => !oldIds.has(a.id)).map(a => ({ id: a.id, kind: 'attempt', at: a.at, payload: a }));
   const analytics: SyncEvent[] = next.analytics.filter(e => !previous.analytics.some(p => p.id === e.id)).map(e => ({ id: e.id, kind: 'analytics', at: e.at, payload: e }));
   const affective: SyncEvent[] = next.checkIns.slice(previous.checkIns.length).map(e => ({ id: randomUUID(), kind: 'affective', at: e.at, payload: e }));
-  return [...attempts, ...analytics, ...affective];
+  // The existing server accepts analytics payloads as JSON. A category keeps
+  // session evidence distinct without requiring a coordinated schema rollout.
+  const session: SyncEvent[] = (next.sessionEvents ?? []).filter(e => !(previous.sessionEvents ?? []).some(p => p.id === e.id))
+    .map(e => ({ id: e.id, kind: 'analytics', at: e.at, payload: { ...e, category: 'session' } }));
+  return [...attempts, ...analytics, ...affective, ...session];
 }

@@ -31,10 +31,10 @@ function useStore() {
     retry: false,
   });
 
-  const sync = useQuery({ queryKey: ['synchronize'], queryFn: async () => { await store.sync(); return new Date().toISOString(); }, enabled: ready && online && cloudConfigured, refetchInterval: 30_000, retry: false });
+  const sync = useQuery({ queryKey: ['synchronize'], queryFn: async () => { await store.sync(); return new Date().toISOString(); }, enabled: ready && online && cloudConfigured && !!envelope.state.cloudAgeBand, refetchInterval: 30_000, retry: false });
   const refetch = sync.refetch;
-  useEffect(() => { if (ready && online && cloudConfigured) { void refetch(); } }, [envelope.pending.length, ready, online, refetch]);
-  useEffect(() => { const s = NativeAppState.addEventListener('change', status => { if (status === 'active' && cloudConfigured && online) { void refetch(); void catalogQuery.refetch(); } }); return () => s.remove(); }, [refetch, catalogQuery, online]);
+  useEffect(() => { if (ready && online && cloudConfigured && envelope.state.cloudAgeBand) { void refetch(); } }, [envelope.pending.length, envelope.state.cloudAgeBand, ready, online, refetch]);
+  useEffect(() => { const s = NativeAppState.addEventListener('change', status => { if (status === 'active' && cloudConfigured && online) { if (envelope.state.cloudAgeBand) void refetch(); void catalogQuery.refetch(); } }); return () => s.remove(); }, [refetch, catalogQuery, online, envelope.state.cloudAgeBand]);
 
   // Ensure new topics are gracefully tracked in masteries
   useEffect(() => {
@@ -54,7 +54,11 @@ function useStore() {
   }, [catalog, ready, envelope.state.masteries, store]);
 
   const commit = useCallback(async (fn: (s: AppState) => AppState, events?: SyncEvent[]) => {
-    try { await store.commit(fn, events); setError(undefined); } catch { setError('Não foi possível salvar neste aparelho. Libere espaço e tente novamente antes de sair.'); throw new Error('Falha ao salvar progresso.'); }
+    try { await store.commit(fn, events); setError(undefined); } catch (cause) {
+      console.error('Falha ao salvar progresso local', cause);
+      setError('Não foi possível salvar neste aparelho. Confira o armazenamento e tente novamente antes de sair.');
+      throw cause;
+    }
   }, [store]);
   return {
     state: envelope.state, envelope, store, ready, error, online, commit,

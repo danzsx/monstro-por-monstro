@@ -1,5 +1,6 @@
 import * as Notifications from 'expo-notifications';
 import { Masteries, Topic } from './types';
+import { usableQuestions } from './recommendation';
 
 if (process.env.EXPO_OS !== 'web') {
   Notifications.setNotificationHandler({
@@ -28,8 +29,13 @@ export async function requestNotificationPermission(): Promise<boolean> {
   }
 }
 
-export async function scheduleSpacedReviewNotifications(masteries: Masteries, topics: Topic[]) {
+export async function cancelReviewNotifications() {
   if (process.env.EXPO_OS === 'web') return;
+  await Notifications.cancelAllScheduledNotificationsAsync();
+}
+
+export async function scheduleSpacedReviewNotifications(masteries: Masteries, topics: Topic[], enabled = false) {
+  if (!enabled || process.env.EXPO_OS === 'web') return;
   try {
     const { status } = await Notifications.getPermissionsAsync();
     if (status !== 'granted') return;
@@ -38,7 +44,8 @@ export async function scheduleSpacedReviewNotifications(masteries: Masteries, to
 
     const now = Date.now();
     const candidates = Object.values(masteries)
-      .filter(m => m.nextReviewAt && Date.parse(m.nextReviewAt) > now)
+      .filter(m => m.nextReviewAt && Date.parse(m.nextReviewAt) > now
+        && topics.some(topic => topic.id === m.topicId && usableQuestions(topic, 'review').length > 0))
       .sort((a, b) => Date.parse(a.nextReviewAt!) - Date.parse(b.nextReviewAt!));
 
     const next = candidates[0];
@@ -53,7 +60,7 @@ export async function scheduleSpacedReviewNotifications(masteries: Masteries, to
     await Notifications.scheduleNotificationAsync({
       content: {
         title: `Hora de reencontrar ${topic.name}`,
-        body: 'Uma revisão rápida de 5 minutos hoje consolida o conteúdo na sua memória.',
+        body: 'Quando houver tempo, uma revisão pode ajudar você a retomar o conteúdo.',
         data: { topicId: topic.id },
       },
       trigger: {

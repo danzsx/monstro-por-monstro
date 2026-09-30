@@ -49,6 +49,8 @@ async function main() {
       '20260924042521_interactive_modules.sql',
       '20260926123000_security_and_publish_bridge_fix.sql',
       '20260926123500_flexible_interactive_figures.sql',
+      '20260929021710_pilot_content_sources.sql',
+      '20260929042000_exam_rights_gate.sql',
     ];
 
     for (const file of migrationFiles) {
@@ -105,6 +107,19 @@ async function main() {
       [studentId]
     );
     check(readSnapshot.rows.length === 1 && readSnapshot.rows[0].revision === 1, 'Snapshot não encontrado após sync_progress.');
+    const secondOp = '55555555-5555-4555-8555-555555555555';
+    const v2 = await db.query<{ sync_progress: number }>(
+      'select public.sync_progress($1::uuid, 1, $2::jsonb, $3::jsonb)',
+      [secondOp, JSON.stringify({ version: 2, masteries: {}, attempts: [] }), '[]']
+    );
+    check(v2.rows[0].sync_progress === 2, 'sync_progress não aceitou snapshot v2.');
+    const retry = await db.query<{ sync_progress: number }>(
+      'select public.sync_progress($1::uuid, 1, $2::jsonb, $3::jsonb)',
+      [secondOp, JSON.stringify({ version: 2, masteries: {}, attempts: [] }), '[]']
+    );
+    check(retry.rows[0].sync_progress === 2, 'Retry v2 duplicou a revisão.');
+    await rejects(`select public.sync_progress('77777777-7777-4777-8777-777777777777'::uuid, 1,
+      '{"version":2,"externalQuestionLogs":[]}'::jsonb, '[]'::jsonb)`, 'Conflito entre aparelhos sobrescreveu a revisão mais nova.');
 
     // 6. Verify publish_topic_version restores learningContext and enemGuidance
     await role('postgres');
@@ -119,23 +134,24 @@ async function main() {
       ) values (
         'cytology', 2, 'published', 'Citologia', 'citologia', 'Biologia',
         '{"overview":"Estudo das células vivas."}'::jsonb,
-        '{"status":"reviewed","priorities":["Membrana plasmática"]}'::jsonb,
+        '{"status":"reviewed","priorities":["Membrana plasmática"],"sources":["Matriz Inep"],"examsAnalyzed":"ENEM 2025","method":"revisão documental"}'::jsonb,
         '${adminId}', '${adminId}'
       ) returning id
     `);
     const tvId = topicVersion.rows[0].id;
 
-    // Add required lesson block and question version
-    await db.exec(`
-      insert into public.lesson_blocks (topic_version_id, position, kind, title, body)
-      values ('${tvId}', 0, 'concept', 'Introdução', 'A célula é a unidade básica da vida.');
-
-      insert into public.question_versions (
-        topic_version_id, question_key, version, purpose, difficulty, prompt, options, answer, explanation, created_by, updated_by
-      ) values (
-        '${tvId}', 'q_cyto_test', 1, 'practice', 2, 'O que é mitocôndria?', '["A","B","C","D"]'::jsonb, 0, 'Organela de respiração.', '${adminId}', '${adminId}'
-      );
-    `);
+    // Pilot topics require six practice items (two distinct sets of three).
+    for (const purpose of ['practice', 'review']) for (let i = 0; i < (purpose === 'practice' ? 6 : 5); i++) {
+      await db.query(`insert into public.question_versions (
+        topic_version_id, question_key, version, purpose, difficulty, prompt, options, answer, explanation,
+        created_by, updated_by, provenance_kind, provenance_note, editorial_reviewed_by, editorial_reviewed_at
+      ) values ($1::uuid,$2,1,$3,2,$4,'["A","B","C","D"]'::jsonb,0,'Organela de respiração.',
+        $5::uuid,$5::uuid,'original','Item autoral revisado',$5::uuid,now())`,
+      [tvId, `q_cyto_${purpose}_${i}`, purpose, `Questão ${purpose} ${i}`, adminId]);
+    }
+    await rejects(`select public.publish_topic_version('${tvId}'::uuid)`, 'Publicou tópico sem aula nem fonte revisada.');
+    await db.exec(`insert into public.topic_sources(topic_version_id,title,url,publisher,rights_basis,fallback_instructions,checked_at,reviewed_by,reviewed_at)
+      values ('${tvId}','Matriz de referência','https://download.inep.gov.br/enem/matriz.pdf','Inep','link_only','Procure a matriz no portal do Inep',now(),'${adminId}',now());`);
 
     // Call publish_topic_version
     await db.exec(`select public.publish_topic_version('${tvId}'::uuid)`);
@@ -148,6 +164,34 @@ async function main() {
     const content = pubTopic.rows[0].content;
     check(content.learningContext?.overview === 'Estudo das células vivas.', 'learningContext foi perdido na publicação!');
     check(content.enemGuidance?.status === 'reviewed', 'enemGuidance foi perdido na publicação!');
+    check(content.curatedSources?.length === 1, 'Fonte curada não foi publicada.');
+    check(content.lessons?.length === 0, 'Publicação sem aula criou bloco inexistente.');
+    const publishedQuestions = await db.query<{ count: string }>("select count(*)::text as count from public.questions where topic_id = 'cytology'");
+    check(Number(publishedQuestions.rows[0].count) === 11, 'Banco de questões da sessão não foi publicado.');
+
+    // Rights gate applies even to a direct catalog insert.
+    await role('postgres');
+    await rejects(`insert into public.questions(id,topic_id,purpose,difficulty,content) values
+      ('exam-unlicensed','cytology','exam',2,'{"enemMetadata":{"exam":"ENEM"}}'::jsonb)`, 'Item oficial sem autorização entrou no catálogo.');
+    const rights = await db.query<{ approved: boolean }>(`select public.exam_item_is_approved('exam',
+      '{"exam":"ENEM","year":2024,"question_number":12}'::jsonb,
+      '{"holder":"Titular","authorizationReference":"Contrato 1","permittedUse":"App","verifiedAt":"2026-09-29","includesEmbeddedMedia":true}'::jsonb) as approved`);
+    check(rights.rows[0].approved, 'Item com documentação completa foi recusado.');
+
+    // One account cannot read or erase another account's private notebook snapshot.
+    const otherId = '66666666-6666-4666-8666-666666666666';
+    await db.exec(`insert into auth.users(id) values ('${otherId}');
+      insert into public.student_snapshots(user_id,revision,snapshot) values
+      ('${otherId}',1,'{"version":2,"externalQuestionLogs":[{"comment":"privado"}]}'::jsonb);`);
+    await role('authenticated', studentId);
+    const isolated = await db.query<{ user_id: string }>('select user_id from public.student_snapshots');
+    check(isolated.rows.length === 1 && isolated.rows[0].user_id === studentId, 'Dados de outro estudante ficaram visíveis.');
+    await db.exec('select public.delete_my_study_data()');
+    await role('postgres');
+    const remaining = await db.query<{ user_id: string }>('select user_id from public.student_snapshots');
+    check(remaining.rows.length === 1 && remaining.rows[0].user_id === otherId, 'Exclusão afetou outra conta ou preservou dados do titular.');
+    await role('anon');
+    await rejects('select public.delete_my_study_data()', 'Usuário anônimo conseguiu excluir dados de estudo.');
 
     console.log('Sprint 1 Segurança e Migrações: TODAS AS VERIFICAÇÕES PASSARAM COM SUCESSO!');
   } catch (err) {

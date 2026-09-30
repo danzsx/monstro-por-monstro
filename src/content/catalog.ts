@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { Topic, TopicId, Question, LessonBlock, EnemMetadata } from '@/learning/types';
+import { Topic, TopicId, Question, LessonBlock } from '@/learning/types';
 import {
   mathQuestions,
   biologyQuestions,
@@ -11,16 +11,6 @@ import {
 } from './questions';
 
 const enemNatureMatrix2026 = 'INEP, Matrizes de Referência do Enem (2026), Ciências da Natureza. https://download.inep.gov.br/enem/outros_documentos/enem_matriz_de_referencia_v1.pdf';
-
-export function formatEnemTag(meta?: EnemMetadata): string {
-  if (!meta) return '';
-  if (meta.label) return meta.label;
-  const parts: (string | number)[] = [meta.exam || 'ENEM', meta.year];
-  if (meta.color) parts.push(`Caderno ${meta.color}`);
-  if (meta.questionNumber) parts.push(`Q. ${meta.questionNumber}`);
-  if (meta.ability) parts.push(meta.ability);
-  return parts.join(' · ');
-}
 
 export const STATIC_TOPICS: Topic[] = [
   { id: 'proportions', name: 'Razões e proporções', discipline: 'Matemática', subtitle: 'Pequenas relações. Grandes descobertas.', description: 'Encontre o que conecta receitas, mapas e situações do seu dia.', relevance: 'Proporções ajudam a entender escalas, misturas e gráficos. Elas abrem o caminho para regra de três.', prerequisiteIds: [], priority: 1, version: 1,
@@ -70,14 +60,14 @@ export const STATIC_TOPICS: Topic[] = [
       ],
       limitations: 'A velocidade média resume o percurso inteiro em uma taxa única, mascarando acelerações e paradas no meio do trajeto.',
     },
-    enemGuidance: { status: 'reviewed', priorities: ['Interpretação de gráficos s x t e v x t', 'Conversão entre km/h e m/s'], commonPatterns: ['Percursos com duas etapas e velocidades distintas'], lowerIncidence: ['Fórmulas complexas de lançamentos oblíquos'], examsAnalyzed: 'ENEM 2018–2024', sources: ['ENEM 2023 Azul Q112', 'ENEM 2021 Amarelo Q98'] },
+    enemGuidance: { status: 'pending', priorities: ['Interpretação de gráficos s x t e v x t', 'Conversão entre km/h e m/s'], commonPatterns: ['Percursos com duas etapas e velocidades distintas'], lowerIncidence: ['Fórmulas complexas de lançamentos oblíquos'], examsAnalyzed: 'ENEM 2018–2024', sources: ['ENEM 2023 Azul Q112', 'ENEM 2021 Amarelo Q98'] },
     lessons: [
       { id: 'k1', kind: 'concept', title: 'Deslocamento por tempo', text: 'Velocidade escalar média é a razão entre o deslocamento total (delta s) e o intervalo de tempo (delta t). Se você anda 60 km em 1 hora, sua velocidade média foi 60 km/h.', formula: 'v = delta s / delta t' },
       { id: 'k2', kind: 'example', title: 'Mudança de unidades sem susto', text: '1 km tem 1.000 metros e 1 hora tem 3.600 segundos. Dividir por 3,6 converte de km/h para m/s. Multiplicar por 3,6 faz o caminho de volta.', formula: '72 km/h ÷ 3,6 = 20 m/s' },
       { id: 'k3', kind: 'concept', title: 'O gráfico conta a história', text: 'Em um gráfico de espaço por tempo (s x t), a inclinação da reta indica a velocidade. Reta horizontal significa repouso (posição constante).' },
       { id: 'k4', kind: 'recall', title: 'Calcule de cabeça', text: 'Um carro anda a 90 km/h durante 2 horas e meia (2,5 h). Qual foi o deslocamento?', reveal: 'Delta s = v × delta t = 90 × 2,5 = 225 km.' },
     ], questions: physicsQuestions('kinematics') },
-  { id: 'newton-laws', name: 'Leis de Newton e dinâmica', discipline: 'Física', subtitle: 'Por trás de cada movimento, uma força.', description: 'Entenda inércia, força resultante e ação-reação em frenagens e no cotidiano.', relevance: 'Cintos de segurança, atrito, elevadores e colisões são frequentes na prova de Ciências da Natureza.', prerequisiteIds: ['kinematics'], priority: .88, version: 1,
+  { id: 'newton-laws', name: 'Leis de Newton e dinâmica', discipline: 'Física', subtitle: 'Por trás de cada movimento, uma força.', description: 'Entenda inércia, força resultante e ação-reação em frenagens e no cotidiano.', relevance: 'Forças e movimento ajudam a interpretar cintos de segurança, atrito, elevadores e colisões.', prerequisiteIds: ['kinematics'], priority: .88, version: 1,
     learningContext: {
       overview: 'As três leis de Isaac Newton explicam como forças alteram o estado de movimento dos corpos. É a base da mecânica clássica e de toda a segurança veicular moderna.',
       applications: [
@@ -86,7 +76,7 @@ export const STATIC_TOPICS: Topic[] = [
       ],
       limitations: 'As leis de Newton são válidas em referenciais inerciais e para velocidades bem inferiores à da luz.',
     },
-    enemGuidance: { status: 'reviewed', priorities: ['Inércia como tendência de manter a velocidade', 'Ação e reação sempre em corpos diferentes'], commonPatterns: ['Análise de forças em veículos e pessoas em movimento'], lowerIncidence: ['Sistemas com múltiplos blocos inclinados'], examsAnalyzed: 'ENEM 2019–2024', sources: ['ENEM 2024 Azul Q119', 'ENEM 2022 Azul Q103'] },
+    enemGuidance: { status: 'pending', priorities: ['Inércia como tendência de manter a velocidade', 'Ação e reação sempre em corpos diferentes'], commonPatterns: ['Análise de forças em veículos e pessoas em movimento'], lowerIncidence: ['Sistemas com múltiplos blocos inclinados'], examsAnalyzed: 'ENEM 2019–2024', sources: ['ENEM 2024 Azul Q119', 'ENEM 2022 Azul Q103'] },
     lessons: [
       { id: 'n1', kind: 'concept', title: 'A tendência natural da inércia', text: 'Se a força resultante sobre um corpo é nula, ele mantém sua velocidade: repouso permanece em repouso e movimento retilíneo uniforme continua sem esforço.' },
       { id: 'n2', kind: 'example', title: 'Força produz aceleração', text: 'A força resultante é proporcional à aceleração e à massa do corpo. Quanto maior a massa, mais força é necessária para mudar a velocidade.', formula: 'F_res = m × a' },
@@ -102,14 +92,14 @@ export const STATIC_TOPICS: Topic[] = [
       ],
       limitations: 'Calorimetria básica assume sistemas isolados sem perdas parasitárias de radiação ou convecção externa.',
     },
-    enemGuidance: { status: 'reviewed', priorities: ['Diferença entre calor e temperatura', 'Alto calor específico da água nas brisas litorâneas'], commonPatterns: ['Equilíbrio térmico entre dois corpos em um calorímetro ideal'], lowerIncidence: ['Mudança de estado a pressões fora de 1 atm'], examsAnalyzed: 'ENEM 2017–2023', sources: ['ENEM 2023 Azul Q131', 'ENEM 2019 Azul Q116'] },
+    enemGuidance: { status: 'pending', priorities: ['Diferença entre calor e temperatura', 'Alto calor específico da água nas brisas litorâneas'], commonPatterns: ['Equilíbrio térmico entre dois corpos em um calorímetro ideal'], lowerIncidence: ['Mudança de estado a pressões fora de 1 atm'], examsAnalyzed: 'ENEM 2017–2023', sources: ['ENEM 2023 Azul Q131', 'ENEM 2019 Azul Q116'] },
     lessons: [
       { id: 'cal1', kind: 'concept', title: 'Calor não é temperatura', text: 'Temperatura mede o grau de agitação molecular. Calor é a energia que flui espontaneamente do corpo mais quente para o mais frio.' },
       { id: 'cal2', kind: 'example', title: 'Calor sensível: variou, esquentou', text: 'Para aquecer sem mudar de estado, a quantidade de calor depende da massa, do calor específico e da variação de temperatura desejada.', formula: 'Q = m × c × delta T' },
       { id: 'cal3', kind: 'concept', title: 'Calor latente: a fase muda, a temperatura não', text: 'Durante a fusão do gelo ou a ebulição da água pura a 1 atm, a temperatura permanece constante enquanto a matéria troca de fase.', formula: 'Q = m × L' },
       { id: 'cal4', kind: 'recall', title: 'Reflita sobre a praia', text: 'Por que durante o dia a areia queima o pé mas o mar está frio?', reveal: 'A areia tem calor específico muito menor que a água: precisa de pouca energia para sua temperatura disparar!' },
     ], questions: physicsQuestions('calorimetry') },
-  { id: 'stoichiometry', name: 'Estequiometria básica', discipline: 'Química', subtitle: 'A receita da matéria na medida certa.', description: 'Relacione mols, massas molares e coeficientes estequiométricos com tranquilidade.', relevance: 'Cálculo estequiométrico transforma fórmulas em quantidades reais e aparece com alta frequência no ENEM.', prerequisiteIds: ['rule-of-three'], priority: .91, version: 1,
+  { id: 'stoichiometry', name: 'Estequiometria básica', discipline: 'Química', subtitle: 'A receita da matéria na medida certa.', description: 'Relacione mols, massas molares e coeficientes estequiométricos com tranquilidade.', relevance: 'Cálculo estequiométrico transforma fórmulas e equações em relações entre quantidades reais.', prerequisiteIds: ['rule-of-three'], priority: .91, version: 1,
     learningContext: {
       overview: 'Estequiometria é o cálculo das proporções quantitativas entre reagentes e produtos em uma reação química. Funciona exatamente como a receita de um bolo: se dobrar os ovos, deve dobrar a farinha.',
       applications: [
@@ -118,7 +108,7 @@ export const STATIC_TOPICS: Topic[] = [
       ],
       limitations: 'O cálculo teórico fornece o rendimento de 100%, mas processos práticos sempre apresentam perdas ou impurezas.',
     },
-    enemGuidance: { status: 'reviewed', priorities: ['Balanceamento prévio indispensável', 'Conservação de massa de Lavoisier'], commonPatterns: ['Cálculo de emissão de CO2 em queima de combustíveis'], lowerIncidence: ['Reações em cadeia de mais de três etapas'], examsAnalyzed: 'ENEM 2018–2024', sources: ['ENEM 2024 Azul Q124', 'ENEM 2023 Azul Q115'] },
+    enemGuidance: { status: 'pending', priorities: ['Balanceamento prévio indispensável', 'Conservação de massa de Lavoisier'], commonPatterns: ['Cálculo de emissão de CO2 em queima de combustíveis'], lowerIncidence: ['Reações em cadeia de mais de três etapas'], examsAnalyzed: 'ENEM 2018–2024', sources: ['ENEM 2024 Azul Q124', 'ENEM 2023 Azul Q115'] },
     lessons: [
       { id: 's1', kind: 'concept', title: 'A receita balanceada', text: 'Em uma equação química balanceada, os coeficientes indicam a proporção em mols. Na queima do metano (CH4 + 2 O2 -> CO2 + 2 H2O), 1 mol de CH4 consome 2 mols de O2.' },
       { id: 's2', kind: 'example', title: 'Massa molar faz a ponte', text: 'A massa molar converte mols em gramas. O carbono tem 12 g/mol e o O2 tem 32 g/mol. Assim, 1 mol de CO2 pesa 12 + 32 = 44 gramas.', formula: 'n = massa / Massa_Molar' },
@@ -134,7 +124,7 @@ export const STATIC_TOPICS: Topic[] = [
       ],
       limitations: 'Modelos de concentração ideal desconsideram interações intermoleculares complexas em soluções supersaturadas.',
     },
-    enemGuidance: { status: 'reviewed', priorities: ['Diferença entre g/L e mol/L', 'Fórmula de diluição C1V1 = C2V2'], commonPatterns: ['Adição de solvente a uma solução concentrada comercial'], lowerIncidence: ['Cálculos avançados de osmolalidade e crioscopia'], examsAnalyzed: 'ENEM 2019–2023', sources: ['ENEM 2023 Azul Q102', 'ENEM 2022 Amarelo Q118'] },
+    enemGuidance: { status: 'pending', priorities: ['Diferença entre g/L e mol/L', 'Fórmula de diluição C1V1 = C2V2'], commonPatterns: ['Adição de solvente a uma solução concentrada comercial'], lowerIncidence: ['Cálculos avançados de osmolalidade e crioscopia'], examsAnalyzed: 'ENEM 2019–2023', sources: ['ENEM 2023 Azul Q102', 'ENEM 2022 Amarelo Q118'] },
     lessons: [
       { id: 'sol1', kind: 'concept', title: 'Soluto dentro do solvente', text: 'Soluto é o que é dissolvido (ex.: sal), solvente é o meio que dissolve (ex.: água). A concentração comum mede a massa de soluto pelo volume total da solução.', formula: 'C = m_soluto / V_solucao' },
       { id: 'sol2', kind: 'example', title: 'Diluir é adicionar água', text: 'Ao diluir uma solução adicionando solvente, a massa de soluto não muda: apenas o volume aumenta e a concentração cai.', formula: 'C1 × V1 = C2 × V2' },
@@ -159,7 +149,7 @@ export const STATIC_TOPICS: Topic[] = [
       limitations: 'Os desenhos de Dalton, Thomson, Rutherford e Bohr são modelos, não fotografias do átomo. O modelo de Bohr explica bem alguns aspectos do hidrogênio, mas o modelo quântico é necessário para descrever átomos mais complexos; elétrons não percorrem órbitas planetárias fixas no modelo atual.',
     },
     enemGuidance: {
-      status: 'reviewed',
+      status: 'pending',
       priorities: [
         'Identificar que evidência experimental motivou cada mudança de modelo.',
         'Conectar níveis de energia à absorção e à emissão de luz, como na chama amarela do sódio.',
@@ -323,7 +313,7 @@ export const STATIC_TOPICS: Topic[] = [
       { id: 'he3', kind: 'concept', title: 'Várias evidências se complementam', text: 'Comparações de DNA ajudam a inferir parentesco e migrações. Ferramentas e fósseis revelam aspectos de modos de vida, mas nenhuma evidência isolada conta toda a história.' },
       { id: 'he4', kind: 'recall', title: 'Evite a ideia de progresso', text: 'Humanos atuais descendem dos chimpanzés atuais? O que indica uma árvore ramificada?', reveal: 'Não. Humanos e chimpanzés atuais compartilham ancestrais. A árvore representa divergência de linhagens a partir de ancestrais comuns.' },
     ], questions: natureExpansionQuestions('human-evolution') },
-  { id: 'water-minerals', name: 'Água e sais minerais', discipline: 'Biologia', subtitle: 'A química que sustenta a vida.', description: 'Relacione as propriedades da água e as funções dos sais minerais ao equilíbrio dos organismos.', relevance: 'O ENEM costuma integrar propriedades da água e íons a situações de saúde, ambiente e funcionamento celular.', prerequisiteIds: [], priority: .86, version: 1,
+  { id: 'water-minerals', name: 'Água e sais minerais', discipline: 'Biologia', subtitle: 'A química que sustenta a vida.', description: 'Relacione as propriedades da água e as funções dos sais minerais ao equilíbrio dos organismos.', relevance: 'Propriedades da água e dos íons ajudam a interpretar situações de saúde, ambiente e funcionamento celular.', prerequisiteIds: [], priority: .86, version: 1,
     learningContext: { overview: 'A água é polar, participa de reações, dissolve muitas substâncias e ajuda a estabilizar a temperatura. Sais minerais aparecem como íons ou componentes de estruturas e moléculas: cálcio em ossos e sinalização, ferro na hemoglobina e iodo nos hormônios tireoidianos são exemplos.', applications: ['Osmose e equilíbrio hídrico ajudam a interpretar desidratação e reidratação.', 'A solubilidade e o transporte de íons ajudam a explicar a condução elétrica em tecidos.', 'Deficiências de ferro e iodo relacionam nutrição a funções fisiológicas.'], limitations: 'Os efeitos de nutrientes dependem da dose, da forma química e das condições individuais. Exemplos escolares não substituem avaliação clínica.' },
     enemGuidance: { status: 'pending', priorities: ['Relacionar polaridade e calor específico da água às suas funções biológicas.', 'Associar íons minerais a funções sem confundir elemento, íon e molécula.', 'Interpretar osmose e equilíbrio hídrico em contextos celulares e de saúde.'], commonPatterns: ['Aplicar propriedades físico-químicas a uma situação biológica contextualizada.', 'Relacionar deficiência ou disponibilidade de um íon a uma função do organismo.'], lowerIncidence: ['Memorização de listas extensas de elementos-traço sem contexto.'], examsAnalyzed: 'Matriz de Referência do ENEM; curadoria específica de itens ainda pendente.', sources: ['Matriz de Referência do ENEM, Ciências da Natureza: moléculas, células e tecidos. https://download.inep.gov.br/download/enem/matriz_referencia.pdf'] },
     lessons: [
@@ -379,7 +369,7 @@ export const STATIC_TOPICS: Topic[] = [
       limitations: 'Um ecossistema real reúne muitas relações simultâneas. Diagramas e exemplos didáticos isolam alguns fatores para facilitar a análise; conclusões sobre uma espécie ou local precisam considerar as condições específicas do ambiente.',
     },
     enemGuidance: {
-      status: 'reviewed',
+      status: 'pending',
       priorities: [
         'Distinguir habitat (onde vive) de nicho (como vive e com quais recursos e relações).',
         'Classificar fatores bióticos e abióticos e prever como uma mudança em um deles afeta os organismos.',
@@ -415,7 +405,7 @@ export const STATIC_TOPICS: Topic[] = [
       { id: 'su4', kind: 'concept', title: 'Clímax ainda muda', text: 'Uma comunidade madura pode manter certa estrutura por algum tempo, mas continua sujeita a secas, incêndios, invasões e mudanças climáticas. Clímax não significa imobilidade.' },
       { id: 'su5', kind: 'recall', title: 'Leia a perturbação', text: 'Uma floresta sofre queimada, mas o solo permanece. A sucessão será primária ou secundária? Por quê?', reveal: 'Secundária, porque já existia uma comunidade e o solo permanece, possivelmente com sementes e organismos sobreviventes.' },
     ], questions: natureExpansionQuestions('succession') },
-  { id: 'populations', name: 'Populações e relações', discipline: 'Biologia', subtitle: 'Números e interações na natureza.', description: 'Interprete variações no tamanho das populações e relações como competição, predação e mutualismo.', relevance: 'A matriz do ENEM inclui dinâmica de populações e interações entre seres vivos, frequentemente interpretadas em situações e gráficos.', prerequisiteIds: ['ecosystems'], priority: .89, version: 1,
+  { id: 'populations', name: 'Populações e relações', discipline: 'Biologia', subtitle: 'Números e interações na natureza.', description: 'Interprete variações no tamanho das populações e relações como competição, predação e mutualismo.', relevance: 'A matriz do ENEM inclui dinâmica de populações e interações entre seres vivos; gráficos são uma forma de estudá-las.', prerequisiteIds: ['ecosystems'], priority: .89, version: 1,
     learningContext: { overview: 'O tamanho de uma população muda com nascimentos, mortes, imigração e emigração. Recursos e interações podem limitar o crescimento; a capacidade de suporte varia com as condições ambientais. Competição, predação, parasitismo e mutualismo conectam populações em uma comunidade.', applications: ['O controle biológico depende da relação entre pragas e seus inimigos naturais.', 'Monitorar populações ameaçadas ajuda a avaliar fragmentação e disponibilidade de recursos.', 'Gráficos de abundância podem indicar respostas a seca, doença ou mudança na quantidade de predadores.'], limitations: 'Modelos exponenciais e logísticos simplificam sistemas reais. A capacidade de suporte não é um número universal e as relações ecológicas podem mudar conforme o contexto.' },
     enemGuidance: { status: 'pending', priorities: ['Interpretar nascimentos, mortes e migrações em gráficos ou tabelas.', 'Reconhecer fatores limitantes e capacidade de suporte sem supor crescimento ilimitado.', 'Identificar efeitos diretos e indiretos de competição, predação e mutualismo.'], commonPatterns: ['Explicar oscilações populacionais após mudança de recurso ou predador.', 'Classificar uma interação com base em quem se beneficia e quem é prejudicado.'], lowerIncidence: ['Resolver equações avançadas de dinâmica populacional sem dados no enunciado.'], examsAnalyzed: 'Matriz de Referência do ENEM 2026; análise de itens específicos ainda pendente.', sources: ['INEP, Matrizes de Referência do Enem (2026), Ciências da Natureza: dinâmica de populações e interações entre os seres vivos. https://download.inep.gov.br/enem/outros_documentos/enem_matriz_de_referencia_v1.pdf'] },
     lessons: [
@@ -552,7 +542,7 @@ export const STATIC_TOPICS: Topic[] = [
       { id: 'ev3', kind: 'concept', title: 'Várias evidências contam a história', text: 'Fósseis, anatomia comparada, embriologia e dados moleculares ajudam a investigar ancestralidade e parentesco entre espécies.' },
       { id: 'ev4', kind: 'recall', title: 'Seleção não é intenção', text: 'O antibiótico faz cada bactéria desenvolver resistência porque precisa sobreviver?', reveal: 'Não. Variações surgem sem objetivo; em certas condições, indivíduos resistentes sobrevivem e se reproduzem mais.' },
     ], questions: natureExpansionQuestions('evolution') },
-  { id: 'electricity', name: 'Eletricidade e consumo', discipline: 'Física', subtitle: 'Energia elétrica em casa e na cidade.', description: 'Use tensão, corrente, resistência, potência e tempo para entender circuitos e consumo de energia.', relevance: 'Contas de luz, segurança elétrica e funcionamento de aparelhos são contextos recorrentes de Física no ENEM.', prerequisiteIds: ['proportions'], priority: .9, version: 1,
+  { id: 'electricity', name: 'Eletricidade e consumo', discipline: 'Física', subtitle: 'Energia elétrica em casa e na cidade.', description: 'Use tensão, corrente, resistência, potência e tempo para entender circuitos e consumo de energia.', relevance: 'Eletricidade ajuda a interpretar contas de luz, segurança e funcionamento de aparelhos.', prerequisiteIds: ['proportions'], priority: .9, version: 1,
     lessons: [
       { id: 'el1', kind: 'concept', title: 'Tensão impulsiona cargas', text: 'Corrente elétrica descreve o fluxo de cargas. A tensão representa a diferença de potencial que pode impulsionar esse fluxo em um circuito.' },
       { id: 'el2', kind: 'example', title: 'Potência e energia consumida', text: 'Potência indica a rapidez de transformação de energia. Para estimar consumo, multiplique a potência pelo tempo de funcionamento.', formula: 'P = U × I   |   E = P × t' },
@@ -573,7 +563,7 @@ export const STATIC_TOPICS: Topic[] = [
       { id: 'ec3', kind: 'concept', title: 'Eletrólise usa energia elétrica', text: 'Uma fonte externa força uma reação não espontânea. A eletrólise pode ser usada para obter ou purificar substâncias e revestir objetos.' },
       { id: 'ec4', kind: 'recall', title: 'Proteja o ferro', text: 'Por que uma camada de zinco pode proteger uma peça de ferro contra corrosão?', reveal: 'O zinco pode oxidar-se preferencialmente e atuar como metal de sacrifício, protegendo o ferro.' },
     ], questions: natureExpansionQuestions('electrochemistry') },
-  { id: 'ecology', name: 'Cadeias e ciclos biogeoquímicos', discipline: 'Biologia', subtitle: 'O campeão absoluto de incidência do ENEM.', description: 'Acompanhe o fluxo unidirecional de energia e a reciclagem dos elementos químicos na biosfera.', relevance: 'Ecologia representa historicamente mais de 30% da prova de Biologia do ENEM.', prerequisiteIds: [], priority: .98, version: 1,
+  { id: 'ecology', name: 'Cadeias e ciclos biogeoquímicos', discipline: 'Biologia', subtitle: 'Energia e matéria em movimento.', description: 'Acompanhe o fluxo unidirecional de energia e a reciclagem dos elementos químicos na biosfera.', relevance: 'Cadeias alimentares e ciclos da matéria ajudam a interpretar relações entre seres vivos e ambiente.', prerequisiteIds: [], priority: .98, version: 1,
     learningContext: {
       overview: 'Ecologia investiga as relações entre os seres vivos e o ambiente. No ENEM, o foco está em como as atividades humanas desequilibram teias tróficas e ciclos vitais como carbono e nitrogênio.',
       applications: [
@@ -582,9 +572,9 @@ export const STATIC_TOPICS: Topic[] = [
       ],
       limitations: 'Diagramas de cadeias alimentares simplificam teias tróficas reais que possuem dezenas de conexões dinâmicas.',
     },
-    enemGuidance: { status: 'reviewed', priorities: ['Bioacumulação trófica no topo da cadeia', 'Ciclos do carbono e do nitrogênio', 'Eutrofização artificial'], commonPatterns: ['Identificação de níveis tróficos e perdas energéticas na cadeia'], lowerIncidence: ['Taxonomia minuciosa de espécies de fitoplâncton'], examsAnalyzed: 'ENEM 2015–2024', sources: ['ENEM 2024 Azul Q98', 'ENEM 2023 Azul Q120', 'ENEM 2021 Azul Q114'] },
+    enemGuidance: { status: 'pending', priorities: ['Bioacumulação trófica no topo da cadeia', 'Ciclos do carbono e do nitrogênio', 'Eutrofização artificial'], commonPatterns: ['Identificação de níveis tróficos e perdas energéticas na cadeia'], lowerIncidence: ['Taxonomia minuciosa de espécies de fitoplâncton'], examsAnalyzed: 'ENEM 2015–2024', sources: ['ENEM 2024 Azul Q98', 'ENEM 2023 Azul Q120', 'ENEM 2021 Azul Q114'] },
     lessons: [
-      { id: 'eco1', kind: 'concept', title: 'Energia flui; matéria cicla', text: 'Produtores captam luz solar e iniciam a cadeia alimentar. A cada nível trófico, cerca de 90% da energia se dissipa em calor. Por isso, o fluxo de energia é unidirecional e decrescente.' },
+      { id: 'eco1', kind: 'concept', title: 'Energia flui; matéria cicla', text: 'Produtores captam luz solar e iniciam a cadeia alimentar. A energia disponível tende a diminuir ao longo dos níveis tróficos por perdas em processos metabólicos e matéria não consumida. Por isso, o fluxo de energia é unidirecional e decrescente.' },
       { id: 'eco2', kind: 'example', title: 'O perigo da bioacumulação', text: 'Poluentes lipossolúveis não biodegradáveis (como mercúrio e agrotóxicos) não são eliminados pelos organismos e se concentram nos predadores do topo da cadeia.' },
       { id: 'eco3', kind: 'concept', title: 'Ciclos do carbono e nitrogênio', text: 'Plantas retiram CO2 pela fotossíntese e animais liberam pela respiração. No nitrogênio, bactérias fixadoras transformam N2 gasoso em amônia e nitratos para os vegetais.' },
       { id: 'eco4', kind: 'recall', title: 'Ponto chave do ENEM', text: 'Por que o esgoto jogado em uma lagoa provoca a morte dos peixes por asfixia?', reveal: 'O esgoto nutre algas que proliferam; quando morrem, bactérias decompositoras consomem todo o oxigênio da água!' },
@@ -598,7 +588,7 @@ export const STATIC_TOPICS: Topic[] = [
       ],
       limitations: 'Textos reais raramente apresentam uma função isolada; em geral, combinam duas ou mais funções com uma dominante.',
     },
-    enemGuidance: { status: 'reviewed', priorities: ['Função apelativa em propagandas e campanhas', 'Função metalinguística em poemas e dicionários'], commonPatterns: ['Associação entre verbos no imperativo e a intenção de orientar a ação do leitor'], lowerIncidence: ['Memorização estrita sem o texto-fonte'], examsAnalyzed: 'ENEM 2016–2024', sources: ['ENEM 2024 Azul Q15', 'ENEM 2023 Azul Q22', 'ENEM 2021 Azul Q8'] },
+    enemGuidance: { status: 'pending', priorities: ['Função apelativa em propagandas e campanhas', 'Função metalinguística em poemas e dicionários'], commonPatterns: ['Associação entre verbos no imperativo e a intenção de orientar a ação do leitor'], lowerIncidence: ['Memorização estrita sem o texto-fonte'], examsAnalyzed: 'ENEM 2016–2024', sources: ['ENEM 2024 Azul Q15', 'ENEM 2023 Azul Q22', 'ENEM 2021 Azul Q8'] },
     lessons: [
       { id: 'lang1', kind: 'concept', title: 'O foco muda o efeito', text: 'Roman Jakobson identificou que cada função enfatiza um elemento da comunicação: o emissor (emotiva), o receptor (apelativa), o contexto (referencial), o canal (fática), o código (metalinguística) ou a mensagem (poética).' },
       { id: 'lang2', kind: 'example', title: 'Apelativa: o foco é em você', text: 'Campanhas como "Não dirija após beber. Preserve vidas." usam verbos no imperativo e vocativos para persuadir o interlocutor a mudar de conduta.' },
@@ -700,13 +690,14 @@ interface RawTopicRow {
     }[];
     learningContext?: Topic['learningContext'];
     enemGuidance?: Topic['enemGuidance'];
+    curatedSources?: Topic['curatedSources'];
   };
 }
 
 interface RawQuestionRow {
   id: string;
   topic_id: string;
-  purpose: 'diagnostic' | 'practice' | 'review';
+  purpose: Question['purpose'];
   difficulty: 1 | 2 | 3;
   content: {
     id: string;
@@ -716,7 +707,10 @@ interface RawQuestionRow {
     answer: number;
     explanation: string;
     difficulty: 1 | 2 | 3;
-    purpose: 'diagnostic' | 'practice' | 'review';
+    purpose: Question['purpose'];
+    version?: number;
+    enemMetadata?: Question['enemMetadata'];
+    rightsEvidence?: Question['rightsEvidence'];
   };
 }
 
@@ -750,7 +744,10 @@ export async function fetchPublishedCatalog(supabase: SupabaseClient | null): Pr
             answer: qc.answer ?? 0,
             explanation: qc.explanation ?? '',
             difficulty: (q.difficulty ?? qc.difficulty ?? 1) as 1 | 2 | 3,
-            purpose: (q.purpose ?? qc.purpose ?? 'practice') as 'diagnostic' | 'practice' | 'review',
+            purpose: (q.purpose ?? qc.purpose ?? 'practice') as Question['purpose'],
+            version: qc.version,
+            enemMetadata: qc.enemMetadata,
+            rightsEvidence: qc.rightsEvidence,
           };
         });
 
@@ -776,6 +773,10 @@ export async function fetchPublishedCatalog(supabase: SupabaseClient | null): Pr
         lessons,
         learningContext: content.learningContext,
         enemGuidance: content.enemGuidance,
+        curatedSources: (content.curatedSources ?? []).filter(source =>
+          /^https:\/\/[^\s]+$/.test(source.url) && !!source.reviewedAt &&
+          Number.isFinite(Date.parse(source.checkedAt)) &&
+          Date.now() - Date.parse(source.checkedAt) <= 180 * 86_400_000),
         questions: topicQuestions,
       };
     });

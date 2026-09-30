@@ -1,10 +1,11 @@
 import type { AppState } from '@/data/state';
-import type { AttemptEvent, ConfidenceLevel, Topic, TopicId, TopicMastery } from '@/learning/types';
+import type { AcquisitionRecord, AttemptEvent, BattlePlan, ConfidenceLevel, RecallRecord, Topic, TopicId, TopicMastery } from '@/learning/types';
 
 export interface JourneyEntry {
   id: string; topicId: TopicId; completedAt: string; startedAt?: string;
   activeMs?: number; attempts?: AttemptEvent[]; confidence?: ConfidenceLevel;
   stageAtCompletion?: TopicMastery['stage']; legacy: boolean;
+  sessionVersion?: 1 | 2; mode?: BattlePlan['mode']; acquisition?: AcquisitionRecord; recall?: RecallRecord;
 }
 export interface JourneyFilter { area?: string; discipline?: string; topicId?: string }
 export interface JourneyTotals { battles: number; topics: number; correct: number; answered: number; activeMs: number; timedBattles: number }
@@ -36,6 +37,7 @@ export function buildJourney(state: AppState): JourneyEntry[] {
     id: session.id, topicId: session.topicId, completedAt: session.completedAt, startedAt: session.startedAt,
     activeMs: session.activeMs, attempts: byBattle.get(session.id) ?? [], stageAtCompletion: session.stageAtCompletion,
     confidence: ratings.filter(r => r.battleId === session.id).at(-1)?.level, legacy: false,
+    sessionVersion: session.sessionVersion, mode: session.mode, acquisition: session.acquisition, recall: session.recall,
   } satisfies JourneyEntry));
   const used = new Set(sessions.map(s => s.id));
   const legacyEvents = state.analytics.filter(e => e.name === 'battle_completed' && e.topicId)

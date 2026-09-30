@@ -2,6 +2,7 @@ import { fireEvent, render } from '@testing-library/react-native';
 import { useApp } from '@/data/provider';
 import { STATIC_TOPICS } from '@/content/catalog';
 import { initialState } from '@/data/state';
+import { buildBattlePlan, selectNextMonster } from '@/learning/engine';
 import JourneyScreen from './journey-screen';
 
 jest.mock('@/data/provider', () => ({ useApp: jest.fn() }));
@@ -17,9 +18,26 @@ test('mostra batalhas concluídas na trilha e resumo do dia sem misturar diagnó
   state.confidenceRatings = [{ id: 'r1', topicId: 'cytology', level: 'high', at: date, battleId: 'b1' }];
   (useApp as jest.Mock).mockReturnValue({ state, topics: STATIC_TOPICS });
   const view = await render(<JourneyScreen />);
-  expect(view.getByText('Desempenho: 1 de 1 respostas corretas · Tempo: 2 min')).toBeTruthy();
+  expect(view.getByText('Questões: 1 de 1 respostas corretas · Tempo ativo no app: 2 min')).toBeTruthy();
   await fireEvent.press(view.getByRole('button', { name: 'Resumo de estudos' }));
   expect(view.getByText('1 de 1 respostas corretas')).toBeTruthy();
   await fireEvent.press(view.getByRole('button', { name: /sexta-feira|sábado|domingo|segunda-feira|terça-feira|quarta-feira|quinta-feira/i }));
   expect(view.getByText('1/1 acertos · 2 min')).toBeTruthy();
 }, 15000);
+
+test('sessão pausada mostra exposição e recordação sem entrar nas concluídas', async () => {
+  const state = initialState();
+  const at = new Date().toISOString();
+  const decision = selectNextMonster(state.masteries, at)!;
+  state.activeBattle = {
+    decision, plan: buildBattlePlan('ongoing', decision), phase: 'paused', resumePhase: 'question',
+    blockIndex: 0, questionIndex: 0, revealed: false, attempts: [], startedAt: at,
+    acquisition: { source: 'external', label: 'Meu livro', selectedAt: at, completedAt: at },
+    recall: { report: 'partial', at, activeMs: 180_000 },
+  };
+  (useApp as jest.Mock).mockReturnValue({ state, topics: STATIC_TOPICS });
+  const view = await render(<JourneyScreen />);
+  expect(view.getByText('SESSÃO EM ANDAMENTO')).toBeTruthy();
+  expect(view.getByText(/Fonte: Meu livro · Recordação: lembrei em parte/)).toBeTruthy();
+  expect(view.getByText('0 sessões concluídas')).toBeTruthy();
+});
